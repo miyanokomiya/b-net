@@ -20,9 +20,9 @@ class Node extends React.Component {
     let rect = ReactDOM.findDOMNode(this.refs.rect);
     let margin = 5;
     rect.x.baseVal.value = bbox.x - margin;
-    rect.y.baseVal.value = bbox.y;
+    rect.y.baseVal.value = bbox.y - margin;
     rect.width.baseVal.value = bbox.width + margin * 2;
-    rect.height.baseVal.value = bbox.height;
+    rect.height.baseVal.value = bbox.height + margin * 2;
   }
 
   componentDidMount () {
@@ -36,10 +36,10 @@ class Node extends React.Component {
     let fill = "#fff";
 
     return (
-      <g onDoubleClick={props.showNodeMenu} data-id={props.id}>
+      <g onMouseDown={props.selectNode} onTouchStart={props.selectNode} data-id={props.id}>
         <rect ref="rect" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} fill={fill} stroke="#666" strokeWidth={height / 10} />
         <text ref="text" x={props.x} y={props.y} fontSize={height} fill="black" stroke="black" textAnchor="middle">
-          {props.text || "-"}
+          {props.text || "[bnet]"}
         </text>
       </g>
     )

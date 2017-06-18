@@ -27,6 +27,7 @@ class Bnet extends React.Component {
 
   componentDidMount () {
     this.componentDidUpdate();
+    this.props.loadTodos();
   }
 
   render () {
@@ -35,12 +36,14 @@ class Bnet extends React.Component {
     let $input = "";
     if (props.state === 1) {
       let node = props.nodeMap[props.target];
-      $input = (
-        <form ref="menu" onSubmit={props.completeChangeText} style={{position : 'absolute'}}>
-          <input type="text" ref="textInput" value={node.text} onChange={props.changeText} />
-          {/*<input type="submit" value="確定" >*/}
-        </form>
-      );
+      if (node) {
+        $input = (
+          <form ref="menu" onSubmit={props.completeChangeText} style={{position : 'absolute'}}>
+            <input type="text" ref="textInput" value={node.text} onChange={props.changeText} />
+            {/*<input type="submit" value="確定" >*/}
+          </form>
+        );
+      }
     } else if (props.state === 2) {
       $input = (
         <form ref="menu" style={{position : 'absolute'}}>
@@ -52,6 +55,7 @@ class Bnet extends React.Component {
         <form ref="menu" style={{position : 'absolute'}}>
           <input type="button" value="追加" onClick={props.addNode} />
           <input type="button" value="編集" onClick={props.readyChangeText} />
+          <input type="button" value="削除" onClick={props.removeNode} />
         </form>
       );
     }
@@ -65,6 +69,9 @@ class Bnet extends React.Component {
             onMouseUp={props.cursorUp}
             onMouseMove={props.cursorMove}
             onWheel={props.cursorWheel}
+            onTouchStart={props.cursorDown}
+            onTouchEnd={props.cursorUp}
+            onTouchMove={props.cursorMove}
             style={{border : '1px solid'}} >
           {
             (function() {
@@ -74,7 +81,7 @@ class Bnet extends React.Component {
                 let node = props.nodeMap[k];
                 list.push(
                   <Node key={node.id} id={node.id} text={node.text} x={node.x} y={node.y}
-                    state={node.state} readyChangeText={props.readyChangeText} showNodeMenu={props.showNodeMenu} />
+                    state={node.state} readyChangeText={props.readyChangeText} selectNode={props.selectNode} />
                 );
 
                 let parent = props.nodeMap[node.parentId];

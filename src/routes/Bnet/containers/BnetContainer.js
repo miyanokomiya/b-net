@@ -13,17 +13,52 @@ import Bnet from '../components/Bnet'
     implementing our wrapper around increment; the component doesn't care   */
 
 function getPoint(e) {
-    let x, y;
-    let rect = e.currentTarget.getBoundingClientRect();
-    x = e.pageX - rect.left;
-    y = e.pageY - rect.top;
-    return {
-      x : x,
-      y : y,
-    };
+  let x, y;
+  let rect = e.currentTarget.getBoundingClientRect();
+  let dx = rect.left + window.pageXOffset;
+  let dy = rect.top + window.pageYOffset;
+
+  if (isTouch(e)) {
+    let touch = e.touches[0];
+    x = touch.pageX - dx;
+    y = touch.pageY - dy;
+  } else {
+    x = e.pageX - dx;
+    y = e.pageY - dy;
+  }
+  return {
+    x : x,
+    y : y,
+  };
+}
+
+function isTouch(e) {
+  return e.touches;
+}
+
+function isMulitTouch(e) {
+  return isTouch(e) && e.touches.length > 1;
+}
+
+function getPoints(e) {
+  let ret = [];
+  let rect = e.currentTarget.getBoundingClientRect();
+  let dx = rect.left + window.pageXOffset;
+  let dy = rect.top + window.pageYOffset;
+
+  for (let i = 0; i < e.touches.length; i++) {
+    let touch = e.touches[i];
+    ret.push({
+      x : touch.pageX - dx,
+      y : touch.pageY - dy,
+    });
+  }
+    
+  return ret;
 }
 
 const mapDispatchToProps = {
+  loadTodos : () => actions.loadTodos(),
   increment : () => actions.increment(3),
   doubleAsync : () => actions.doubleAsync(),
   changeText : (e) => actions.changeText(e.target.value),
@@ -42,16 +77,13 @@ const mapDispatchToProps = {
     });
   },
   addNode : (e) => {
-    let p = getPoint(e);
-    return actions.addNode({
-      x : p.x,
-      y : p.y,
-    });
+    return actions.addNode();
   },
-  showNodeMenu : (e) => {
-    return actions.showNodeMenu({
-      target : e.currentTarget.getAttribute("data-id"),
-    });
+  removeNode : (e) => {
+    return actions.removeNode();
+  },
+  selectNode : (e) => {
+    return actions.selectNode(e.currentTarget.getAttribute("data-id"));
   },
   cursorDown : (e) => {
     e.preventDefault();
@@ -62,17 +94,26 @@ const mapDispatchToProps = {
       y : p.y,
       onField : e.currentTarget === e.target,
       target : g ? g.getAttribute("data-id") : null,
+      time : Date.now(),
+      isMulitTouch : isMulitTouch(e),
     });
   },
   cursorUp : (e) => {
     return actions.cursorUp();
   },
   cursorMove : (e) => {
-    let p = getPoint(e);
-    return actions.cursorMove({
-      x : p.x,
-      y : p.y,
-    });
+    e.preventDefault();
+
+    if (isMulitTouch(e)) {
+      let list = getPoints(e);
+      return actions.cursorPinch(list);
+    } else {
+      let p = getPoint(e);
+      return actions.cursorMove({
+        x : p.x,
+        y : p.y,
+      });
+    }
   },
   cursorWheel : (e) => {
     e.preventDefault();
