@@ -1,6 +1,9 @@
 import {firebaseDb} from '../../../../firebase/'
 const ref = firebaseDb.ref('nodemap');
 
+import {v2f, f2v, wheelCanvas, pinchCanvas} from './canvasUtils'
+import {createNode, assignNode, createNewNode, getBetterPoint, moveNode} from './nodeUtils'
+
 // ------------------------------------
 // Constants
 // ------------------------------------
@@ -366,12 +369,23 @@ const ACTION_HANDLERS = {
     } else {
       let nextNodeMap = Object.assign({}, state.nodeMap);
       nextNodeMap[node.id] = node;
+
+      let p = v2f(state.viewArea, state.cursorState);
+      let dx = node.x - p.x;
+      let dy = node.y - p.y;
+
+      let viewArea = Object.assign({}, state.viewArea, {
+        left : state.viewArea.left + dx,
+        top : state.viewArea.top + dy,
+      });
+
       return Object.assign({}, 
         state, 
         {
           state : 1,
           target : node.id,
           nodeMap : nextNodeMap,
+          viewArea : viewArea,
         });
     }
   },
@@ -502,164 +516,32 @@ const ACTION_HANDLERS = {
       });
   },
   [BNET_CURSOR_WHEEL] : (state, action) => {
-    let scale = state.viewArea.scale / Math.pow(1.01, action.payload.deltaX);
-    scale = Math.max(scale, 0.1);
-    scale = Math.min(scale, 10);
-
-    // カーソル位置を基準にスケール変更
-    let tmpViewArea = Object.assign({}, state.viewArea, {
-      scale : scale,
-    });
-    let f = v2f(state.viewArea, action.payload);
-    let f2 = v2f(tmpViewArea, action.payload);
-    let dx = f.x - f2.x;
-    let dy = f.y - f2.y;
+    let va = wheelCanvas(state, action.payload.deltaX, action.payload);
 
     return Object.assign({},
       state, 
       {
-        viewArea : Object.assign({}, state.viewArea,
-        {
-          scale : scale,
-          left : state.viewArea.left + dx,
-          top : state.viewArea.top + dy,
-        }),
+        viewArea : va,
         state : 0,
       });
   },
   [BNET_CURSOR_PINCH] : (state, action) => {
     let p0 = action.payload[0];
     let p1 = action.payload[1];
-    let center = {
-      x : (p0.x + p1.x) / 2,
-      y : (p0.y + p1.y) / 2,
-    }
-
-    let scale = state.viewArea.scale
-    let d = Math.pow(Math.pow((p0.x - p1.x), 2) + Math.pow((p0.y - p1.y), 2), 1/2)
-    if (state.cursorState.pinchDistance > 0) {
-      let delta = state.cursorState.pinchDistance - d;
-
-      scale = state.viewArea.scale / Math.pow(1.01, -delta/2);
-      scale = Math.max(scale, 0.1);
-      scale = Math.min(scale, 10);
-    }
-
-    // カーソル位置を基準にスケール変更
-    let tmpViewArea = Object.assign({}, state.viewArea, {
-      scale : scale,
-    });
-    let f = v2f(state.viewArea, center);
-    let f2 = v2f(tmpViewArea, center);
-    let dx = f.x - f2.x;
-    let dy = f.y - f2.y;
+    let result = pinchCanvas(state, p0, p1);
+    let va = result[0];
+    let d = result[1];
 
     return Object.assign({},
       state, 
       {
-        viewArea : Object.assign({}, state.viewArea,
-        {
-          scale : scale,
-          left : state.viewArea.left + dx,
-          top : state.viewArea.top + dy,
-        }),
+        viewArea : va,
         state : 0,
         cursorState : Object.assign({}, state.cursorState, {
           pinchDistance : d,
         }),
       });
   },
-}
-
-function generateUuid() {
-    // https://github.com/GoogleChrome/chrome-platform-analytics/blob/master/src/internal/identifier.js
-    // const FORMAT: string = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
-    let chars = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".split("");
-    for (let i = 0, len = chars.length; i < len; i++) {
-        switch (chars[i]) {
-            case "x":
-                chars[i] = Math.floor(Math.random() * 16).toString(16);
-                break;
-            case "y":
-                chars[i] = (Math.floor(Math.random() * 4) + 8).toString(16);
-                break;
-        }
-    }
-    return chars.join("");
-}
-
-function createNode(ignoreId) {
-  return {
-    x : 0,
-    y : 0,
-    parentId : null,
-    text : "",
-    id : ignoreId ? "" : generateUuid(),
-    childIdList : [],
-  };
-}
-
-// nodeの不足プロパティを補う
-function assignNode(node) {
-  let init = createNode(true);
-  return Object.assign({}, init, node);
-}
-
-function createNewNode(state) {
-  let node = createNode();
-  let parent = state.nodeMap[state.target];
-  if (parent) {
-    node.parentId = state.target;
-    let parent = state.nodeMap[node.parentId];
-    node.x = parent.x + 30;
-    node.y = parent.y + 30;
-  } else {
-    let p = v2f(state.viewArea, state.menuPoint)
-    node.x = p.x;
-    node.y = p.y;
-  }
-
-  return node;
-}
-
-function moveNode(state, x, y, node) {
-  let dx = x - state.cursorState.x;
-  let dy = y - state.cursorState.y;
-  dx *= state.viewArea.scale;
-  dy *= state.viewArea.scale;
-  
-  // node移動
-  let nextNode = Object.assign({}, node, {
-    x : node.x + dx,
-    y : node.y + dy,
-  });
-
-  for (let k in state.nodeMap) {
-    let other = state.nodeMap[k];
-    // 自分と子供は除外
-    if (other !== node && other.parentId !== node.id) {
-      let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
-      if (d2 / state.viewArea.scale < 1000) {
-        nextNode.parentId = other.id;
-        break;
-      }
-    }
-  }
-
-  return nextNode;
-}
-
-function v2f(viewArea, p) {
-  return {
-    x : p.x * viewArea.scale + viewArea.left,
-    y : p.y * viewArea.scale + viewArea.top,
-  }
-}
-function f2v(viewArea, p) {
-  return {
-    x : (p.x - viewArea.left) / viewArea.scale,
-    y : (p.y - viewArea.top) / viewArea.scale,
-  }
 }
 
 // ------------------------------------

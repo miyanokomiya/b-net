@@ -16,8 +16,8 @@ class PageLayout extends React.Component {
       <div>
         <IndexLink to='/' activeClassName='page-layout__nav-item--active'>Home</IndexLink>
         {' | '}
-        <Link to='/counter' activeClassName='page-layout__nav-item--active'>Counter</Link>
-        {' | '}
+        {/*<Link to='/counter' activeClassName='page-layout__nav-item--active'>Counter</Link>
+        {' | '}*/}
         <Link to='/bnet' activeClassName='page-layout__nav-item--active'>Bnet</Link>
       </div>
     );

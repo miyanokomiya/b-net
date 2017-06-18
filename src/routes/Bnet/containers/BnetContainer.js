@@ -113,7 +113,7 @@ const mapDispatchToProps = {
       return actions.cursorMove({
         x : p.x,
         y : p.y,
-        buttons : e.buttons,
+        buttons : isTouch(e) ? 1 : e.buttons,
       });
     }
   },
