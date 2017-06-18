@@ -2,6 +2,14 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Node from './Node'
 import ReactDOM from 'react-dom'
+import TextField from 'material-ui/TextField'
+import IconButton from 'material-ui/IconButton'
+import ActionHome from 'material-ui/svg-icons/action/home'
+import ContentCreate from 'material-ui/svg-icons/content/create'
+import ContentAddBox from 'material-ui/svg-icons/content/add-box'
+import ContentDeleteSweep from 'material-ui/svg-icons/content/delete-sweep'
+import ContentContentCut from 'material-ui/svg-icons/content/content-cut'
+import './Bnet.scss'
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -12,9 +20,8 @@ class Bnet extends React.Component {
   }
 
   componentDidUpdate () {
-    let input = ReactDOM.findDOMNode(this.refs.textInput);
-    if (input) {
-      input && input.focus();
+    if (this.refs.textInput) {
+      this.refs.textInput.focus();
     }
 
     let menu = ReactDOM.findDOMNode(this.refs.menu);
@@ -22,6 +29,11 @@ class Bnet extends React.Component {
       let rect = menu.getBoundingClientRect();
       menu.style.left = this.props.menuPoint.x - rect.width / 2 + "px";
       menu.style.top = this.props.menuPoint.y + 10 + "px";
+
+      if (this.refs.textInput) {
+        let input = ReactDOM.findDOMNode(this.refs.textInput);
+        input.style.width = rect.width + "px";
+      }
     }
   }
 
@@ -39,7 +51,7 @@ class Bnet extends React.Component {
       if (node) {
         $input = (
           <form ref="menu" onSubmit={props.completeChangeText} style={{position : 'absolute'}}>
-            <input type="text" ref="textInput" value={node.text} onChange={props.changeText} />
+            <TextField name="textInput" ref="textInput" value={node.text} onChange={props.changeText} style={{backgroundColor:'#fff'}} inputStyle={{textAlign : 'center'}} />
             {/*<input type="submit" value="確定" >*/}
           </form>
         );
@@ -47,47 +59,78 @@ class Bnet extends React.Component {
     } else if (props.state === 2) {
       $input = (
         <form ref="menu" style={{position : 'absolute'}}>
-          <input type="button" value="追加" onClick={props.addNode} />
+          <IconButton tooltip="Add" onTouchTap={props.addNode}>
+            <ContentAddBox />
+          </IconButton>
         </form>
       );
     } else if (props.state === 3) {
+      let node = props.nodeMap[props.target];
+      let cutButton = !node.parentId ? "" : (
+        <IconButton tooltip="Cut" onTouchTap={props.cutParent}>
+          <ContentContentCut />
+        </IconButton>
+      );
       $input = (
         <form ref="menu" style={{position : 'absolute'}}>
-          <input type="button" value="追加" onClick={props.addNode} />
-          <input type="button" value="編集" onClick={props.readyChangeText} />
-          <input type="button" value="削除" onClick={props.removeNode} />
+          <IconButton tooltip="Add" onTouchTap={props.addNode}>
+            <ContentAddBox />
+          </IconButton>
+          <IconButton tooltip="Edit" onTouchTap={props.readyChangeText}>
+            <ContentCreate />
+          </IconButton>
+          {cutButton}
+          <IconButton tooltip="Delete" onTouchTap={props.removeNode}>
+            <ContentDeleteSweep />
+          </IconButton>
         </form>
       );
     }
+
+    let vewBox = props.viewArea.left + " " + props.viewArea.top + " " + props.viewArea.scale * props.width + " " + props.viewArea.scale * props.height;
       
     return (
-      <div style={{ margin: '0 auto', width : props.width, height : props.height, position : 'relative' }} >
-        <svg version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
-            viewBox={props.viewArea.left + " " + props.viewArea.top + " " + props.viewArea.scale * props.width + " " + props.viewArea.scale * props.height}
+      <div className="svg-box" >
+        <svg className="svg-canvas" version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
+            viewBox={vewBox}
             onClick={props.fieldClick}
             onMouseDown={props.cursorDown}
             onMouseUp={props.cursorUp}
+            onMouseLeave={props.cursorUp}
             onMouseMove={props.cursorMove}
             onWheel={props.cursorWheel}
             onTouchStart={props.cursorDown}
             onTouchEnd={props.cursorUp}
-            onTouchMove={props.cursorMove}
-            style={{border : '1px solid'}} >
+            onTouchCancel={props.cursorUp}
+            onTouchMove={props.cursorMove} >
           {
             (function() {
+              let sizeMap = {};
+              for (let k in props.nodeMap) {
+                let node = props.nodeMap[k];
+                if (node.parentId) {
+                  if (sizeMap[node.parentId]) {
+                    sizeMap[node.parentId]++;
+                  } else {
+                    sizeMap[node.parentId] = 1;
+                  }
+                }
+              }
+
               let list = [];
               let lineList = [];
               for (let k in props.nodeMap) {
                 let node = props.nodeMap[k];
+                let size = sizeMap[node.id] || 0;
                 list.push(
-                  <Node key={node.id} id={node.id} text={node.text} x={node.x} y={node.y}
-                    state={node.state} readyChangeText={props.readyChangeText} selectNode={props.selectNode} />
+                  <Node key={node.id} id={node.id} text={node.text} x={node.x} y={node.y} target={node.id === props.target}
+                    state={node.state} readyChangeText={props.readyChangeText} selectNode={props.selectNode} refSize={size} />
                 );
 
                 let parent = props.nodeMap[node.parentId];
                 if (parent) {
                   let line = (
-                    <line key={node.id + "-" + parent.id} x1={node.x} y1={node.y} x2={parent.x} y2={parent.y} stroke="#e74c3c" strokeWidth="2" />
+                    <line key={node.id + "-" + parent.id} x1={node.x} y1={node.y} x2={parent.x} y2={parent.y} />
                   )
                   lineList.push(line);
                 }

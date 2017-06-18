@@ -76,6 +76,7 @@ const mapDispatchToProps = {
       time : Date.now(),
     });
   },
+  cutParent : (e) => actions.cutParent(),
   addNode : (e) => {
     return actions.addNode();
   },

@@ -32,13 +32,12 @@ class Node extends React.Component {
   render () {
     let props = this.props;
     let width = props.text.length * 20;
-    let height = 20;
-    let fill = "#fff";
+    let height = 30 + props.refSize * 7;
 
     return (
-      <g onMouseDown={props.selectNode} onTouchStart={props.selectNode} data-id={props.id}>
-        <rect ref="rect" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} fill={fill} stroke="#666" strokeWidth={height / 10} />
-        <text ref="text" x={props.x} y={props.y} fontSize={height} fill="black" stroke="black" textAnchor="middle">
+      <g onMouseDown={props.selectNode} onTouchStart={props.selectNode} data-id={props.id} className={props.target ? "target" : ""}>
+        <rect ref="rect" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} />
+        <text ref="text" x={props.x} y={props.y} fontSize={height} >
           {props.text || "[bnet]"}
         </text>
       </g>

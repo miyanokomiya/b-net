@@ -126,6 +126,24 @@ export function fieldClick (value) {
   }
 }
 
+export function cutParent (value) {
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+    let node = state.nodeMap[state.target];
+    if (node) {
+      let nextNode = Object.assign({}, node, {parentId : null});
+      firebaseDb.ref(`nodemap/${node.id}`).update(nextNode)
+      .catch(error => {
+        console.log(error);
+        return dispatch({
+          type: 'SAVE_NODE_ERROR',
+          message: error.message,
+        });
+      });
+    }
+  }
+}
+
 export function addNode () {
   return (dispatch, getState) => {
     let node = createNewNode(getState().bnet);
@@ -275,6 +293,7 @@ export const actions = {
   readyChangeText,
   completeChangeText,
   fieldClick,
+  cutParent,
   addNode,
   removeNode,
   selectNode,
@@ -594,6 +613,18 @@ function moveNode(state, x, y, node) {
     y : node.y + dy,
   });
 
+  for (let k in state.nodeMap) {
+    let other = state.nodeMap[k];
+    // 自分と子供は除外
+    if (other !== node && other.parentId !== node.id) {
+      let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
+      if (d2 / state.viewArea.scale < 1000) {
+        nextNode.parentId = other.id;
+        break;
+      }
+    }
+  }
+
   return nextNode;
 }
 
@@ -614,8 +645,8 @@ function f2v(viewArea, p) {
 // Reducer
 // ------------------------------------
 const initialState = {
-  width : 500,
-  height : 500,
+  width : 2000,
+  height : 2000,
   nodeMap : {},
   state : 0,
   target : null,
