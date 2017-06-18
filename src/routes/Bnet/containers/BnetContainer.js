@@ -113,6 +113,7 @@ const mapDispatchToProps = {
       return actions.cursorMove({
         x : p.x,
         y : p.y,
+        buttons : e.buttons,
       });
     }
   },

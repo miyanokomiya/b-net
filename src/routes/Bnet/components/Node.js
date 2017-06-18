@@ -38,7 +38,7 @@ class Node extends React.Component {
       <g onMouseDown={props.selectNode} onTouchStart={props.selectNode} data-id={props.id} className={props.target ? "target" : ""}>
         <rect ref="rect" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} />
         <text ref="text" x={props.x} y={props.y} fontSize={height} >
-          {props.text || "[bnet]"}
+          {props.text || "-bnet-"}
         </text>
       </g>
     )

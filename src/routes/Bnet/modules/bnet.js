@@ -244,7 +244,7 @@ export function cursorUp (value) {
 export function cursorMove (value) {
   return (dispatch, getState) => {
     let state = getState().bnet;
-    if (state.cursorState.drag) {
+    if (state.cursorState.drag && value.buttons > 0) {
       // 操作対象ノードを探す
       let node = state.nodeMap[state.target];
       if (node) {
@@ -361,6 +361,7 @@ const ACTION_HANDLERS = {
   [BNET_ADD_NODE] : (state, action) => {
     let node = action.payload;
     if (state.nodeMap[node.id]) {
+      // 追加済みは無視
       return state;
     } else {
       let nextNodeMap = Object.assign({}, state.nodeMap);
@@ -386,6 +387,11 @@ const ACTION_HANDLERS = {
       });
   },
   [BNET_SELECT_NODE] : (state, action) => {
+    let node = state.nodeMap[action.payload];
+    if (!node) {
+      return state;
+    }
+
     return Object.assign({}, 
       state, 
       {
@@ -397,9 +403,10 @@ const ACTION_HANDLERS = {
       return state;
     }
 
-    let s = state.state;
+    let s = 0;
     let target = state.target;
     let timeDiff = action.payload.time - state.lastDownTime;
+    let viewArea = state.viewArea;
     if (action.payload.onField) {
       target = null;
       if (timeDiff < 500) {
@@ -409,7 +416,19 @@ const ACTION_HANDLERS = {
       }
     } else {
       if (timeDiff < 500 && state.target) {
-        s = 3;
+        let node = state.nodeMap[state.target];
+        if (node) {
+          s = 3;
+
+          let p = v2f(state.viewArea, state.cursorState);
+          let dx = node.x - p.x;
+          let dy = node.y - p.y;
+
+          viewArea = Object.assign({}, state.viewArea, {
+            left : state.viewArea.left + dx,
+            top : state.viewArea.top + dy,
+          });
+        }
       }
       if (s === 2) {
         s = 0;
@@ -432,7 +451,8 @@ const ACTION_HANDLERS = {
         }),
         state : s,
         lastDownTime : action.payload.time,
-        target : target
+        target : target,
+        viewArea : viewArea
       });
   },
   [BNET_CURSOR_UP] : (state, action) => {
@@ -587,8 +607,9 @@ function assignNode(node) {
 
 function createNewNode(state) {
   let node = createNode();
-  node.parentId = state.target;
-  if (node.parentId) {
+  let parent = state.nodeMap[state.target];
+  if (parent) {
+    node.parentId = state.target;
     let parent = state.nodeMap[node.parentId];
     node.x = parent.x + 30;
     node.y = parent.y + 30;

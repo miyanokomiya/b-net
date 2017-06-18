@@ -52,7 +52,6 @@ class Bnet extends React.Component {
         $input = (
           <form ref="menu" onSubmit={props.completeChangeText} style={{position : 'absolute'}}>
             <TextField name="textInput" ref="textInput" value={node.text} onChange={props.changeText} style={{backgroundColor:'#fff'}} inputStyle={{textAlign : 'center'}} />
-            {/*<input type="submit" value="確定" >*/}
           </form>
         );
       }
