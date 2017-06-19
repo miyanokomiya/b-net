@@ -13,6 +13,7 @@ export const BNET_READY_CHANGE_TEXT = 'BNET_READY_CHANGE_TEXT'
 export const BNET_COMPLETE_CHANGE_TEXT = 'BNET_COMPLETE_CHANGE_TEXT'
 export const BNET_STORE_MENU_POINT = 'BNET_STORE_MENU_POINT'
 export const BNET_ADD_NODE = 'BNET_ADD_NODE'
+export const BNET_SELECT_AND_READY_CHANGE_TEXT = 'BNET_ABNET_SELECT_AND_READY_CHANGE_TEXTDD_NODE_AND_EDIT'
 export const BNET_REMOVE_NODE = 'BNET_REMOVE_NODE'
 export const BNET_CHANGE_NODE = 'BNET_CHANGE_NODE'
 export const BNET_SELECT_NODE = 'BNET_SELECT_NODE'
@@ -152,7 +153,7 @@ export function addNode () {
     let node = createNewNode(getState().bnet);
     firebaseDb.ref(`nodemap/${node.id}`).update(node)
     .then(() => dispatch({
-      type    : BNET_SELECT_NODE,
+      type    : BNET_SELECT_AND_READY_CHANGE_TEXT,
       payload : node.id
     }))
     .catch(error => {
@@ -370,24 +371,30 @@ const ACTION_HANDLERS = {
       let nextNodeMap = Object.assign({}, state.nodeMap);
       nextNodeMap[node.id] = node;
 
-      let p = v2f(state.viewArea, state.cursorState);
-      let dx = node.x - p.x;
-      let dy = node.y - p.y;
-
-      let viewArea = Object.assign({}, state.viewArea, {
-        left : state.viewArea.left + dx,
-        top : state.viewArea.top + dy,
-      });
-
       return Object.assign({}, 
         state, 
         {
-          state : 1,
-          target : node.id,
           nodeMap : nextNodeMap,
-          viewArea : viewArea,
         });
     }
+  },
+  [BNET_SELECT_AND_READY_CHANGE_TEXT] : (state, action) => {
+    let node = state.nodeMap[action.payload];
+
+    let p = v2f(state.viewArea, state.cursorState);
+    let dx = node.x - p.x;
+    let dy = node.y - p.y;
+
+    let viewArea = Object.assign({}, state.viewArea, {
+      left : state.viewArea.left + dx,
+      top : state.viewArea.top + dy,
+    });
+
+    return Object.assign({}, state, {
+      state : 1,
+      target : node.id,
+      viewArea : viewArea,
+    });
   },
   [BNET_REMOVE_NODE] : (state, action) => {
     let nextNodeMap = Object.assign({}, state.nodeMap);
