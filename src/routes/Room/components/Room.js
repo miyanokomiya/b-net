@@ -9,6 +9,7 @@ import Dialog from 'material-ui/Dialog'
 import TextField from 'material-ui/TextField'
 import IconButton from 'material-ui/IconButton'
 import ContentCreate from 'material-ui/svg-icons/content/create'
+import RoomAddDialog from './RoomAddDialog'
 
 class Room extends React.Component {
   static propTypes = {
@@ -16,6 +17,7 @@ class Room extends React.Component {
   
   state = {
     open: false,
+    openAddDialog: false,
   };
 
   componentDidUpdate () {
@@ -33,6 +35,19 @@ class Room extends React.Component {
 
   handleClose = () => {
     this.setState({open: false});
+  };
+
+  openAddDialog = () => {
+    this.setState({openAddDialog: true});
+  };
+
+  closeAddDialog = () => {
+    this.setState({openAddDialog: false});
+  };
+
+  submitAddDialog = (data) => {
+    this.setState({openAddDialog: false});
+    this.props.addRoom(data);
   };
 
   editComplete = () => {
@@ -79,9 +94,13 @@ class Room extends React.Component {
       </Dialog>
     );
 
+    let roomAddDialog = !this.state.openAddDialog ? "" : (
+      <RoomAddDialog submit={this.submitAddDialog} cancel={this.closeAddDialog} />
+    )
+
     return (
       <div>
-        <IconButton tooltip="Add" onTouchTap={props.addRoom}>
+        <IconButton tooltip="Add" onTouchTap={this.openAddDialog}>
           <ContentAddBox />
         </IconButton>
         {(function() {
@@ -102,6 +121,7 @@ class Room extends React.Component {
         })()}
 
         {dialog}
+        {roomAddDialog}
       </div>
     )
   }

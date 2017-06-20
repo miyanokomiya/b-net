@@ -68,10 +68,16 @@ function loadTodosError(error){
   }
 }
 
-function addRoom(value) {
+function addRoom(data) {
   return (dispatch, getState) => {
-    let room = createRoom();
-    ref.push(room)
+    // ルームのパスワードはルームデータから隔離して保存
+    let room = assignRoom({name:data.name});
+    var newPostKey = firebaseDb.ref().child('posts').push().key;
+    var updates = {};
+    updates['/room/' + newPostKey] = room;
+    updates['/roomkey/' + newPostKey] = data.password;
+
+    firebaseDb.ref().update(updates)
     .catch(error => {
       console.log(error);
       return dispatch({

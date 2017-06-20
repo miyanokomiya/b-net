@@ -5,11 +5,21 @@ import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import {firebaseAuth} from '../../firebase/'
 
 class App extends React.Component {
   static propTypes = {
     store: PropTypes.object.isRequired,
     routes: PropTypes.object.isRequired,
+  }
+
+  componentDidMount () {
+    firebaseAuth.signInAnonymously().catch(function(error) {
+    // Handle Errors here.
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    // ...
+});
   }
 
   shouldComponentUpdate () {
