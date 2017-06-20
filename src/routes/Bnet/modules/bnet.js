@@ -1,4 +1,4 @@
-import {firebaseDb} from '../../../../firebase/'
+import {firebaseDb, TIMESTAMP} from '../../../../firebase/'
 const ref = firebaseDb.ref('nodemap');
 
 import {v2f, f2v, wheelCanvas, pinchCanvas} from './canvasUtils'
@@ -151,6 +151,7 @@ export function cutParent (value) {
 export function addNode () {
   return (dispatch, getState) => {
     let node = createNewNode(getState().bnet);
+    node.created = TIMESTAMP;
     firebaseDb.ref(`nodemap/${node.id}`).update(node)
     .then(() => dispatch({
       type    : BNET_SELECT_AND_READY_CHANGE_TEXT,
