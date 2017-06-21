@@ -96,7 +96,43 @@ class Room extends React.Component {
 
     let roomAddDialog = !this.state.openAddDialog ? "" : (
       <RoomAddDialog submit={this.submitAddDialog} cancel={this.closeAddDialog} />
-    )
+    );
+
+    let confirmDeleteRoom = (roomId) => {
+      this.setState({deleteTarget: roomId});
+    };
+
+    let cancelDeleteRoom = () => {
+      this.setState({deleteTarget: null});
+    };
+
+    let execDeleteRoom = (roomId) => {
+      props.deleteRoom(this.state.deleteTarget);
+      this.setState({deleteTarget: null});
+    };
+
+    let confirmDeleteDialog = !this.state.deleteTarget ? "" : (
+      <Dialog
+        title="Confirm"
+        actions={[
+          <FlatButton
+            label="Delete"
+            primary={true}
+            keyboardFocused={true}
+            onTouchTap={execDeleteRoom}
+          />,
+          <FlatButton
+            label="Cancel"
+            primary={true}
+            onTouchTap={cancelDeleteRoom}
+          />,
+        ]}
+        modal={false}
+        open={true}
+        onRequestClose={cancelDeleteRoom} >
+        Are you sure that you want to delete?
+      </Dialog>
+    );
 
     return (
       <div>
@@ -114,7 +150,7 @@ class Room extends React.Component {
                 created={room.created}
                 name={room.name}
                 readyEditRoom={handleOpen}
-                deleteRoom={props.deleteRoom} />
+                deleteRoom={confirmDeleteRoom} />
             )
           }
           return list.reverse();
@@ -122,6 +158,7 @@ class Room extends React.Component {
 
         {dialog}
         {roomAddDialog}
+        {confirmDeleteDialog}
       </div>
     )
   }
