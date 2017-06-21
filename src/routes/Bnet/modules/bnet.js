@@ -1,4 +1,4 @@
-import {firebaseDb, TIMESTAMP} from '../../../../firebase/'
+import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
 const ref = firebaseDb.ref('nodemap');
 
 import {v2f, f2v, wheelCanvas, pinchCanvas} from './canvasUtils'
@@ -25,18 +25,33 @@ export const BNET_CURSOR_UP = 'BNET_CURSOR_UP'
 export const BNET_CURSOR_WHEEL = 'BNET_CURSOR_WHEEL'
 export const BNET_CURSOR_PINCH = 'BNET_CURSOR_PINCH'
 
+export const BNET_NOT_AUTH = 'BNET_NOT_AUTH'
+export const BNET_CLEAR = 'BNET_CLEAR'
+
+const DEFAULT_ROOM = 'bnet-default'
+
 // ------------------------------------
 // Actions
 // ------------------------------------
 
 export function loadTodos() {
-  return dispatch => {
+  return (dispatch, getState) => {
+    let state = getState();
+    if (state.bnet.roomId) {
+      firebaseDb.ref(`nodemap/${state.roomId}`).off();
+    }
+    let roomId = state.location.query["room-id"] || DEFAULT_ROOM;
+    let ref = firebaseDb.ref(`nodemap/${roomId}`);
     ref.off();
     // valueを購読する。変更があれば、以下の処理が実行される。
     ref.on('value',
       (snapshot) => {
         ref.off('value');
-        dispatch(loadTodosSuccess(snapshot));
+        dispatch(loadTodosSuccess({
+          roomId : roomId,
+          snapshot : snapshot,
+          changeRoom : state.bnet.roomId !== roomId,
+        }));
         ref.on('child_added',
           (snapshot) => {
             dispatch(addNodeSuccess(snapshot));
@@ -67,20 +82,32 @@ export function loadTodos() {
         dispatch(loadTodosError(error));
       }
     );
+
+    return dispatch({
+      type    : BNET_CLEAR,
+      payload : null
+    });
   }
 }
 
-function loadTodosSuccess(snapshot){
+function loadTodosSuccess(value){
   return {
     type: BNET_RECEIVE_DATA,
-    payload: snapshot.val()
+    payload: value
   }
 }
 
 function loadTodosError(error){
-  return {
-    type: 'TODOS_RECIVE_ERROR',
-    message: error.message
+  if (error.code === 'PERMISSION_DENIED') {
+    return {
+      type: 'BNET_NOT_AUTH',
+      message: error.message
+    }
+  } else {
+    return {
+      type: 'TODOS_RECIVE_ERROR',
+      message: error.message
+    }
   }
 }
 
@@ -90,7 +117,8 @@ export function changeText (value = "") {
     let node = state.nodeMap[state.target];
     if (node) {
       let nextNode = Object.assign({}, node, {text : value});
-      firebaseDb.ref(`nodemap/${node.id}`).update(nextNode)
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+      ref.update(nextNode)
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -136,7 +164,8 @@ export function cutParent (value) {
     let node = state.nodeMap[state.target];
     if (node) {
       let nextNode = Object.assign({}, node, {parentId : null});
-      firebaseDb.ref(`nodemap/${node.id}`).update(nextNode)
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+      ref.update(nextNode)
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -152,7 +181,9 @@ export function addNode () {
   return (dispatch, getState) => {
     let node = createNewNode(getState().bnet);
     node.created = TIMESTAMP;
-    firebaseDb.ref(`nodemap/${node.id}`).update(node)
+    let state = getState().bnet;
+    let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+    ref.update(node)
     .then(() => dispatch({
       type    : BNET_SELECT_AND_READY_CHANGE_TEXT,
       payload : node.id
@@ -178,7 +209,8 @@ export function removeNode () {
   return (dispatch, getState) => {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
-    firebaseDb.ref(`nodemap/${node.id}`).remove()
+    let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+    ref.remove()
     .catch(error => {
       console.log(error);
       return dispatch({
@@ -198,11 +230,13 @@ function removeNodeSuccess(snapshot){
 
 export function saveNode (value) {
     return (dispatch, getState) => {
-    ref.push(value)
-    .catch(error => dispatch({
-      type: 'SAVE_NODE_ERROR',
-      message: error.message,
-    }));
+      let state = getState().bnet;
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
+      ref.push(value)
+      .catch(error => dispatch({
+        type: 'SAVE_NODE_ERROR',
+        message: error.message,
+      }));
   }
 }
 
@@ -225,7 +259,8 @@ export function cursorUp (value) {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
     if (node) {
-      firebaseDb.ref(`nodemap/${node.id}`).update(node)
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+      ref.update(node)
       .then(() => dispatch({
         type    : BNET_CURSOR_UP,
         payload : value
@@ -255,7 +290,8 @@ export function cursorMove (value) {
       if (node) {
         // ノードを移動
         let nextNode = moveNode(state, value.x, value.y, node);
-        firebaseDb.ref(`nodemap/${nextNode.id}`).update(nextNode)
+        let ref = firebaseDb.ref(`nodemap/${state.roomId}/${nextNode.id}`);
+        ref.update(nextNode)
         .catch(error => {
           console.log(error);
           return dispatch({
@@ -292,6 +328,28 @@ export function cursorPinch (value) {
   }
 }
 
+export function postPassword (value) {
+  return (dispatch, getState) => {
+    let state = getState();
+    let roomId = state.location.query["room-id"] || DEFAULT_ROOM;
+    let user = firebaseAuth.currentUser;
+    let update = {};
+    update[roomId] = value;
+    let ref = firebaseDb.ref(`user/${user.uid}/room`);
+    ref.update(update)
+    .then(() => {
+      dispatch(loadTodos());
+    })
+    .catch(error => {
+      console.log(error);
+      return dispatch({
+        type: 'SAVE_NODE_ERROR',
+        payload: error.message,
+      });
+    });
+  }
+}
+
 export const actions = {
   loadTodos,
   changeText,
@@ -307,23 +365,48 @@ export const actions = {
   cursorMove,
   cursorWheel,
   cursorPinch,
+  postPassword,
 }
 
 // ------------------------------------
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
+  [BNET_CLEAR] : (state, action) => {
+    return Object.assign({}, 
+      state, 
+      {
+        nodeMap : {},
+        notAuth : false,
+      });
+  },
+  [BNET_NOT_AUTH] : (state, action) => {
+    return Object.assign({}, 
+      state, 
+      {
+        notAuth : true
+      });
+  },
   [BNET_RECEIVE_DATA] : (state, action) => {
-    let nodeMap = action.payload;
+    let nodeMap = action.payload.snapshot.val() || {};
     // データ変更などによる不足データを補う
     for (let k in nodeMap) {
       nodeMap[k] = assignNode(nodeMap[k]);
     }
 
+    let viewArea = Object.assign({}, state.viewArea);
+    if (action.payload.changeRoom) {
+      viewArea.left = 0;
+      viewArea.top = 0;
+    }
+
     return Object.assign({}, 
       state, 
       {
-        nodeMap : Object.assign({}, state.nodeMap, nodeMap)
+        nodeMap : nodeMap,
+        roomId : action.payload.roomId,
+        viewArea : viewArea,
+        notAuth : false
       });
   },
   [BNET_CHANGE_TEXT] : (state, action) => {
@@ -558,8 +641,10 @@ const ACTION_HANDLERS = {
 const initialState = {
   width : 2000,
   height : 2000,
+  roomId : DEFAULT_ROOM,
   nodeMap : {},
   state : 0,
+  notAuth : false,
   target : null,
   menuPoint : {
     x : 0,

@@ -126,6 +126,7 @@ const mapDispatchToProps = {
       deltaX : e.deltaY,
     });
   },
+  postPassword : (pass) => actions.postPassword(pass),
 }
 
 const mapStateToProps = (state) => state.bnet

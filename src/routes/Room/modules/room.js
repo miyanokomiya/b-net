@@ -1,4 +1,4 @@
-import {firebaseDb, TIMESTAMP} from '../../../../firebase/'
+import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
 const ref = firebaseDb.ref('room');
 
 // ------------------------------------
@@ -75,7 +75,11 @@ function addRoom(data) {
     var newPostKey = firebaseDb.ref().child('posts').push().key;
     var updates = {};
     updates['/room/' + newPostKey] = room;
-    updates['/roomkey/' + newPostKey] = data.password;
+    if (data.password) {
+      updates['/roomkey/' + newPostKey] = data.password;
+      let user = firebaseAuth.currentUser;
+      updates['/user/' + user.uid + '/room/' + newPostKey] = data.password;
+    }
 
     firebaseDb.ref().update(updates)
     .catch(error => {
@@ -118,7 +122,13 @@ function editRoomSuccess(value) {
 
 function deleteRoom(key) {
   return (dispatch, getState) => {
-    firebaseDb.ref(`room/${key}`).remove()
+    var updates = {};
+    updates['/room/' + key] = null;
+    updates['/roomkey/' + key] = null;
+    updates['/nodemap/' + key] = null;
+    let user = firebaseAuth.currentUser;
+    updates['/user/' + user.uid + '/room/' + key] = null;
+    firebaseDb.ref().update(updates)
     .catch(error => {
       console.log(error);
       return dispatch({

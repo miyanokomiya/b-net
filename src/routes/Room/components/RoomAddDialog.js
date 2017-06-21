@@ -53,13 +53,12 @@ class RoomCard extends React.Component {
           open={true}
           onRequestClose={props.cancel} >
           <TextField
-            hintText="Input your room's name."
             floatingLabelText="Name"
             floatingLabelFixed={true}
             ref="roomNameInput"
           />
           <TextField
-            hintText="Input your room's password."
+            hintText="Omissible"
             floatingLabelText="Password"
             floatingLabelFixed={true}
             ref="roomPasswordInput"

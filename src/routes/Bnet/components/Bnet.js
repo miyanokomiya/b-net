@@ -10,6 +10,8 @@ import ContentAddBox from 'material-ui/svg-icons/content/add-box'
 import ContentDeleteSweep from 'material-ui/svg-icons/content/delete-sweep'
 import ContentContentCut from 'material-ui/svg-icons/content/content-cut'
 import './Bnet.scss'
+import Dialog from 'material-ui/Dialog'
+import FlatButton from 'material-ui/FlatButton';
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -86,6 +88,33 @@ class Bnet extends React.Component {
       );
     }
 
+    let postPassword = () => {
+      let pass = this.refs.password.input.value;
+      props.postPassword(pass);
+    };
+
+    let dialog = !props.notAuth ? "" : (
+      <Dialog
+        title="Not Auth"
+        actions={[
+          <FlatButton
+            label="Submit"
+            primary={true}
+            keyboardFocused={true}
+            onTouchTap={postPassword}
+          />
+        ]}
+        modal={true}
+        open={true} >
+        <TextField
+          hintText="Input this room's password."
+          floatingLabelText="Password"
+          floatingLabelFixed={true}
+          ref="password"
+        />
+      </Dialog>
+    );
+
     let vewBox = props.viewArea.left + " " + props.viewArea.top + " " + props.viewArea.scale * props.width + " " + props.viewArea.scale * props.height;
       
     return (
@@ -140,6 +169,7 @@ class Bnet extends React.Component {
         </svg>
         
         {$input}
+        {dialog}
       </div>
     );
   }

@@ -1,12 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
+import {Link } from 'react-router'
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
 import IconButton from 'material-ui/IconButton'
 import ContentAddBox from 'material-ui/svg-icons/content/add-box'
 import ContentCreate from 'material-ui/svg-icons/content/create'
 import ContentDeleteSweep from 'material-ui/svg-icons/content/delete-sweep'
+import ImageNavigateNext from 'material-ui/svg-icons/image/navigate-next'
 
 class RoomCard extends React.Component {
   static propTypes = {
@@ -34,12 +36,14 @@ class RoomCard extends React.Component {
     return (
       <div>
         <Card>
-          <CardHeader
-            title={props.name}
-            subtitle={date.toLocaleString()}
-            actAsExpander={true}
-            showExpandableButton={true}
-          />
+          <Link to={`/bnet?room-id=${props.id}`}>
+            <CardHeader
+              title={props.name}
+              subtitle={date.toLocaleString()}
+              actAsExpander={false}
+              showExpandableButton={false}
+            />
+          </Link>
           <CardActions>
             <IconButton tooltip="Edit" onTouchTap={readyEditRoom}>
               <ContentCreate />
@@ -48,12 +52,12 @@ class RoomCard extends React.Component {
               <ContentDeleteSweep />
             </IconButton>
           </CardActions>
-          <CardText expandable={true}>
+          {/*<CardText expandable={true}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
             Donec mattis pretium massa. Aliquam erat volutpat. Nulla facilisi.
             Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
             Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
-          </CardText>
+          </CardText>*/}
         </Card>
       </div>
     )
