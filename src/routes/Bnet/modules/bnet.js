@@ -7,6 +7,7 @@ import {createNode, assignNode, createNewNode, getBetterPoint, moveNode} from '.
 // ------------------------------------
 // Constants
 // ------------------------------------
+export const BNET_RECEIVE_ROOM = 'BNET_RECEIVE_ROOM'
 export const BNET_RECEIVE_DATA = 'BNET_RECEIVE_DATA'
 export const BNET_CHANGE_TEXT = 'BNET_CHANGE_TEXT'
 export const BNET_READY_CHANGE_TEXT = 'BNET_READY_CHANGE_TEXT'
@@ -41,52 +42,64 @@ export function loadTodos() {
       firebaseDb.ref(`nodemap/${state.roomId}`).off();
     }
     let roomId = state.location.query["room-id"] || DEFAULT_ROOM;
-    let ref = firebaseDb.ref(`nodemap/${roomId}`);
-    ref.off();
-    // valueを購読する。変更があれば、以下の処理が実行される。
-    ref.on('value',
-      (snapshot) => {
-        ref.off('value');
-        dispatch(loadTodosSuccess({
-          roomId : roomId,
-          snapshot : snapshot,
-          changeRoom : state.bnet.roomId !== roomId,
-        }));
-        ref.on('child_added',
-          (snapshot) => {
-            dispatch(addNodeSuccess(snapshot));
-          },
-          (error) => {
-            dispatch(loadTodosError(error));
-          }
-        );
-        ref.on('child_changed',
-          (snapshot) => {
-            dispatch(chnageNodeSuccess(snapshot));
-          },
-          (error) => {
-            dispatch(loadTodosError(error));
-          }
-        );
-        ref.on('child_removed',
-          (snapshot) => {
-            dispatch(removeNodeSuccess(snapshot));
-          },
-          (error) => {
-            dispatch(loadTodosError(error));
-          }
-        );
-      },
-      (error) => {
-        // ref.off('value');
-        dispatch(loadTodosError(error));
-      }
-    );
+
+    firebaseDb.ref(`room/${roomId}`).once('value', (snapshot) => {
+      dispatch(loadRoomSuccess(snapshot));
+
+      let ref = firebaseDb.ref(`nodemap/${roomId}`);
+      ref.off();
+      // valueを購読する。変更があれば、以下の処理が実行される。
+      ref.once('value',
+        (snapshot) => {
+          dispatch(loadTodosSuccess({
+            roomId : roomId,
+            snapshot : snapshot,
+            changeRoom : state.bnet.roomId !== roomId,
+          }));
+          ref.on('child_added',
+            (snapshot) => {
+              dispatch(addNodeSuccess(snapshot));
+            },
+            (error) => {
+              dispatch(loadTodosError(error));
+            }
+          );
+          ref.on('child_changed',
+            (snapshot) => {
+              dispatch(chnageNodeSuccess(snapshot));
+            },
+            (error) => {
+              dispatch(loadTodosError(error));
+            }
+          );
+          ref.on('child_removed',
+            (snapshot) => {
+              dispatch(removeNodeSuccess(snapshot));
+            },
+            (error) => {
+              dispatch(loadTodosError(error));
+            }
+          );
+        },
+        (error) => {
+          dispatch(loadTodosError(error));
+        }
+      );
+    }, (error) => {
+      dispatch(loadTodosError(error));
+    });
 
     return dispatch({
       type    : BNET_CLEAR,
       payload : null
     });
+  }
+}
+
+function loadRoomSuccess(value){
+  return {
+    type: BNET_RECEIVE_ROOM,
+    payload: value
   }
 }
 
@@ -387,6 +400,16 @@ const ACTION_HANDLERS = {
         notAuth : true
       });
   },
+  [BNET_RECEIVE_ROOM] : (state, action) => {
+    let room = action.payload.val();
+
+    return Object.assign({}, 
+      state, 
+      {
+        roomId : action.payload.key,
+        room : room,
+      });
+  },
   [BNET_RECEIVE_DATA] : (state, action) => {
     let nodeMap = action.payload.snapshot.val() || {};
     // データ変更などによる不足データを補う
@@ -404,9 +427,8 @@ const ACTION_HANDLERS = {
       state, 
       {
         nodeMap : nodeMap,
-        roomId : action.payload.roomId,
         viewArea : viewArea,
-        notAuth : false
+        notAuth : false,
       });
   },
   [BNET_CHANGE_TEXT] : (state, action) => {
@@ -631,6 +653,10 @@ const initialState = {
   width : 2000,
   height : 2000,
   roomId : DEFAULT_ROOM,
+  room : {
+    name : "",
+    hint : "",
+  },
   nodeMap : {},
   state : 0,
   notAuth : false,

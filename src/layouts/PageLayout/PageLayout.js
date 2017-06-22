@@ -3,6 +3,8 @@ import { IndexLink, Link } from 'react-router'
 import PropTypes from 'prop-types'
 import './PageLayout.scss'
 import AppBar from 'material-ui/AppBar';
+import ActionHome from 'material-ui/svg-icons/action/home'
+import IconButton from 'material-ui/IconButton'
 
 class PageLayout extends React.Component {
   static propTypes = {
@@ -14,11 +16,12 @@ class PageLayout extends React.Component {
     let children = props.children;
     let linkList = (
       <div>
-        <IndexLink to='/' activeClassName='page-layout__nav-item--active'>Home</IndexLink>
+        {/*<IndexLink to='/' activeClassName='page-layout__nav-item--active'>Home</IndexLink>
         {' | '}
-        <Link to='/room' activeClassName='page-layout__nav-item--active'>Room</Link>
+        <IndexLink to='/room' activeClassName='page-layout__nav-item--active'>Room</IndexLink>
         {' | '}
         <Link to='/bnet' activeClassName='page-layout__nav-item--active'>Bnet</Link>
+        */}
       </div>
     );
 
@@ -26,7 +29,12 @@ class PageLayout extends React.Component {
       <div className='container text-center'>
         <AppBar 
           title={linkList}
-          showMenuIconButton={false}
+          showMenuIconButton={true}
+          iconElementLeft={
+            <Link to='/room'>
+              <IconButton><ActionHome /></IconButton>
+            </Link>
+          }
         />
         <div className='page-layout__viewport'>
           {children}
@@ -35,25 +43,5 @@ class PageLayout extends React.Component {
     )
   }
 }
-
-// export const PageLayout = ({ children }) => (
-//     <div className='container text-center'>
-//     <AppBar 
-//       title={children} 
-//       iconClassNameRight="muidocs-icon-navigation-expand-more"
-//     />
-//     <IndexLink to='/' activeClassName='page-layout__nav-item--active'>Home</IndexLink>
-//     {' · '}
-//     <Link to='/counter' activeClassName='page-layout__nav-item--active'>Counter</Link>
-//     {' · '}
-//     <Link to='/bnet' activeClassName='page-layout__nav-item--active'>Bnet</Link>
-//     <div className='page-layout__viewport'>
-//       {children}
-//     </div>
-//   </div>
-// )
-// PageLayout.propTypes = {
-//   children: PropTypes.node,
-// }
 
 export default PageLayout

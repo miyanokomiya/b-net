@@ -1,6 +1,28 @@
 {
   "rules": {
-    ".read": "true",
-    ".write": "true"
+    "nodemap" : {
+      "$room_id" : {
+        ".read": "!root.child('roomkey/'+$room_id).exists() || root.child('user/'+ auth.uid +'/room/'+$room_id).val() === root.child('roomkey/'+$room_id).val()",
+        ".write": "!root.child('roomkey/'+$room_id).exists() || root.child('user/'+ auth.uid +'/room/'+$room_id).val() === root.child('roomkey/'+$room_id).val()"
+      }
+    },
+    "room" : {
+      ".read": "true",
+      "$room_id" : {
+        ".write": "!root.child('roomkey/'+$room_id).exists() || !root.child('roomkey/'+$room_id).exists() || root.child('user/'+ auth.uid +'/room/'+$room_id).val() === root.child('roomkey/'+$room_id).val()"
+      }
+    },
+    "roomkey" : {
+      "$room_id" : {
+        ".read": "false",
+        ".write": "!root.child('roomkey/'+$room_id).exists() || !root.child('roomkey/'+$room_id).exists() || root.child('user/'+ auth.uid +'/room/'+$room_id).val() === root.child('roomkey/'+$room_id).val()"
+      }
+    },
+    "user" : {
+      "$user_id" : {
+        ".read": "auth !== null && auth.uid === $user_id",
+        ".write": "auth !== null && auth.uid === $user_id"
+      }
+    }
   }
 }

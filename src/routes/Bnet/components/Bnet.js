@@ -124,7 +124,7 @@ class Bnet extends React.Component {
 
     let dialog = !props.notAuth ? "" : (
       <Dialog
-        title="Not Auth"
+        title="Please Password"
         actions={[
           <FlatButton
             label="Submit"
@@ -136,7 +136,7 @@ class Bnet extends React.Component {
         modal={true}
         open={true} >
         <TextField
-          hintText="Input this room's password."
+          hintText={"Hint:" + props.room.hint}
           floatingLabelText="Password"
           floatingLabelFixed={true}
           ref="password"

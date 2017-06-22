@@ -27,6 +27,7 @@ class RoomCard extends React.Component {
         this.props.submit({
         name : this.refs.roomNameInput.input.value,
         password : this.refs.roomPasswordInput.input.value,
+        hint : this.refs.roomHintInput.input.value,
       });
     };
 
@@ -57,11 +58,19 @@ class RoomCard extends React.Component {
             floatingLabelFixed={true}
             ref="roomNameInput"
           />
+          <br/>
           <TextField
             hintText="Omissible"
             floatingLabelText="Password"
             floatingLabelFixed={true}
             ref="roomPasswordInput"
+          />
+          <br/>
+          <TextField
+            hintText="Omissible"
+            floatingLabelText="Hint"
+            floatingLabelFixed={true}
+            ref="roomHintInput"
           />
         </Dialog>
       </div>
