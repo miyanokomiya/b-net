@@ -68,17 +68,17 @@ export function loadTodos() {
             dispatch(loadTodosError(error));
           }
         );
+        ref.on('child_removed',
+          (snapshot) => {
+            dispatch(removeNodeSuccess(snapshot));
+          },
+          (error) => {
+            dispatch(loadTodosError(error));
+          }
+        );
       },
       (error) => {
         // ref.off('value');
-        dispatch(loadTodosError(error));
-      }
-    );
-    ref.on('child_removed',
-      (snapshot) => {
-        dispatch(removeNodeSuccess(snapshot));
-      },
-      (error) => {
         dispatch(loadTodosError(error));
       }
     );
@@ -465,30 +465,28 @@ const ACTION_HANDLERS = {
   [BNET_SELECT_AND_READY_CHANGE_TEXT] : (state, action) => {
     let node = state.nodeMap[action.payload];
 
-    let p = v2f(state.viewArea, state.cursorState);
-    let dx = node.x - p.x;
-    let dy = node.y - p.y;
-
-    let viewArea = Object.assign({}, state.viewArea, {
-      left : state.viewArea.left + dx,
-      top : state.viewArea.top + dy,
-    });
-
     return Object.assign({}, state, {
       state : 1,
       target : node.id,
-      viewArea : viewArea,
+      // viewArea : viewArea,
     });
   },
   [BNET_REMOVE_NODE] : (state, action) => {
     let nextNodeMap = Object.assign({}, state.nodeMap);
     delete nextNodeMap[action.payload.id];
 
+    let target = state.target;
+    // 選択ノードが削除された
+    if (target === action.payload.id) {
+      target = null;
+    }
+
     return Object.assign({}, 
       state, 
       {
         nodeMap : nextNodeMap,
         state : 0,
+        target : target,
       });
   },
   [BNET_SELECT_NODE] : (state, action) => {
@@ -524,15 +522,6 @@ const ACTION_HANDLERS = {
         let node = state.nodeMap[state.target];
         if (node) {
           s = 3;
-
-          let p = v2f(state.viewArea, state.cursorState);
-          let dx = node.x - p.x;
-          let dy = node.y - p.y;
-
-          viewArea = Object.assign({}, state.viewArea, {
-            left : state.viewArea.left + dx,
-            top : state.viewArea.top + dy,
-          });
         }
       }
       if (s === 2) {

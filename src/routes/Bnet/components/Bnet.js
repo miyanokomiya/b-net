@@ -12,6 +12,7 @@ import ContentContentCut from 'material-ui/svg-icons/content/content-cut'
 import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
+import {f2v} from '../modules/canvasUtils'
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -29,8 +30,16 @@ class Bnet extends React.Component {
     let menu = ReactDOM.findDOMNode(this.refs.menu);
     if (menu) {
       let rect = menu.getBoundingClientRect();
-      menu.style.left = this.props.menuPoint.x - rect.width / 2 + "px";
-      menu.style.top = this.props.menuPoint.y + 10 + "px";
+      let node = this.props.nodeMap[this.props.target];
+      if (node) {
+        let p = f2v(this.props.viewArea, node);
+        menu.style.left = p.x - rect.width / 2 + "px";
+        menu.style.top = p.y + 10 + "px";
+      } else {
+        let p = this.props.menuPoint;
+        menu.style.left = p.x - rect.width / 2 + "px";
+        menu.style.top = p.y - 25 + "px";
+      }
 
       if (this.refs.textInput) {
         let input = ReactDOM.findDOMNode(this.refs.textInput);
@@ -83,27 +92,29 @@ class Bnet extends React.Component {
           </IconButton>
         </form>
       );
-    } else if (props.state === 3) {
+    } else if (props.target && !props.cursorState.drag) {
       let node = props.nodeMap[props.target];
-      let cutButton = !node.parentId ? "" : (
-        <IconButton tooltip="Cut" onTouchTap={props.cutParent}>
-          <ContentContentCut />
-        </IconButton>
-      );
-      $input = (
-        <form ref="menu" style={{position : 'absolute'}}>
-          <IconButton tooltip="Add" onTouchTap={props.addNode}>
-            <ContentAddBox />
+      if (node) {
+        let cutButton = !props.nodeMap[node.parentId] ? "" : (
+          <IconButton tooltip="Cut" onTouchTap={props.cutParent}>
+            <ContentContentCut />
           </IconButton>
-          <IconButton tooltip="Edit" onTouchTap={props.readyChangeText}>
-            <ContentCreate />
-          </IconButton>
-          {cutButton}
-          <IconButton tooltip="Delete" onTouchTap={props.removeNode}>
-            <ContentDeleteSweep />
-          </IconButton>
-        </form>
-      );
+        );
+        $input = (
+          <form ref="menu" style={{position : 'absolute'}}>
+            <IconButton tooltip="Add" onTouchTap={props.addNode}>
+              <ContentAddBox />
+            </IconButton>
+            <IconButton tooltip="Edit" onTouchTap={props.readyChangeText}>
+              <ContentCreate />
+            </IconButton>
+            {cutButton}
+            <IconButton tooltip="Delete" onTouchTap={props.removeNode}>
+              <ContentDeleteSweep />
+            </IconButton>
+          </form>
+        );
+      }
     }
 
     let postPassword = () => {
