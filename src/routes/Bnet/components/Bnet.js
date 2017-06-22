@@ -42,6 +42,24 @@ class Bnet extends React.Component {
   componentDidMount () {
     this.componentDidUpdate();
     this.props.loadTodos();
+
+    this.adjustSvgBox();
+
+    // 画面リサイズでsvg領域を調整
+    this._adjustSvgBox = () => {
+      this.adjustSvgBox();
+    };
+    window.addEventListener('resize', this._adjustSvgBox);
+  }
+
+  componentWillUnmount () {
+    // イベントハンドラ片付け
+    window.removeEventListener('resize', this._adjustSvgBox);
+  }
+
+  adjustSvgBox () {
+    let svgBox = this.refs.svgBox;
+    svgBox.style.height = window.innerHeight - 80 + "px";
   }
 
   render () {
@@ -118,7 +136,7 @@ class Bnet extends React.Component {
     let vewBox = props.viewArea.left + " " + props.viewArea.top + " " + props.viewArea.scale * props.width + " " + props.viewArea.scale * props.height;
       
     return (
-      <div className="svg-box" >
+      <div ref="svgBox" className="svg-box" >
         <svg className="svg-canvas" version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
             viewBox={vewBox}
             onClick={props.fieldClick}
