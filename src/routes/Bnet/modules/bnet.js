@@ -308,6 +308,9 @@ export function cursorUp (value) {
   }
 }
 
+let cursorMoveCommitTimer = null;
+let cursorMoveCommitData = null;
+
 export function cursorMove (value) {
   return (dispatch, getState) => {
     let state = getState().bnet;
@@ -331,16 +334,29 @@ export function cursorMove (value) {
             }) 
           }
         }
-        let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
-        ref.update(nextFamily)
-        .catch(error => {
-          console.log(error);
-          return dispatch({
-            type: 'SAVE_NODE_ERROR',
-            payload: error.message,
-          });
-        });
 
+        cursorMoveCommitData = nextFamily;
+
+        if (!cursorMoveCommitTimer) {
+          cursorMoveCommitTimer = setTimeout(() => {
+            cursorMoveCommitTimer = null;
+            // ドラッグ状態だった場合だけコミット
+            let state = getState().bnet;
+            if (state.cursorState.drag) {
+              let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
+              ref.update(cursorMoveCommitData)
+              .catch(error => {
+                console.log(error);
+                return dispatch({
+                  type: 'SAVE_NODE_ERROR',
+                  payload: error.message,
+                });
+              });
+            }
+            // 10〜200の範囲で要素数に応じてインターバルを増やす
+          }, 10 + Math.min(Object.keys(cursorMoveCommitData).length * 10, 190));
+        }
+        
         return dispatch({
           type    : BNET_CURSOR_MOVE,
           payload : value
