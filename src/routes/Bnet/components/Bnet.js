@@ -176,6 +176,18 @@ class Bnet extends React.Component {
                 }
               }
 
+              let ancestorMap = {};
+              let current = props.nodeMap[props.target];
+              while (current) {
+                let parent = props.nodeMap[current.parentId];
+                if (parent) {
+                  ancestorMap[`${current.id}-${current.parentId}`] = true;
+                  current = parent;
+                } else {
+                  current = null;
+                }
+              }
+
               let list = [];
               let lineList = [];
               for (let k in props.nodeMap) {
@@ -190,8 +202,10 @@ class Bnet extends React.Component {
 
                 let parent = props.nodeMap[node.parentId];
                 if (parent) {
+                  let key = `${node.id}-${parent.id}`;
                   let line = (
-                    <line key={node.id + "-" + parent.id} x1={node.x} y1={node.y} x2={parent.x} y2={parent.y} />
+                    <line key={key} x1={node.x} y1={node.y} x2={parent.x} y2={parent.y}
+                      className={ancestorMap[key] ? "ancestor-line" : ""}/>
                   )
                   lineList.push(line);
                 }
