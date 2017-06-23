@@ -127,6 +127,7 @@ const mapDispatchToProps = {
     });
   },
   postPassword : (pass) => actions.postPassword(pass),
+  selectFamily : () => actions.selectFamily(),
 }
 
 const mapStateToProps = (state) => state.bnet

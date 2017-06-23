@@ -13,6 +13,7 @@ import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
 import {f2v} from '../modules/canvasUtils'
+import HardwareDeviceHub from 'material-ui/svg-icons/hardware/device-hub'
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -87,7 +88,7 @@ class Bnet extends React.Component {
     } else if (props.state === 2) {
       $input = (
         <form ref="menu" style={{position : 'absolute'}}>
-          <IconButton tooltip="Add" onTouchTap={props.addNode}>
+          <IconButton tooltip="" onTouchTap={props.addNode}>
             <ContentAddBox />
           </IconButton>
         </form>
@@ -96,20 +97,23 @@ class Bnet extends React.Component {
       let node = props.nodeMap[props.target];
       if (node) {
         let cutButton = !props.nodeMap[node.parentId] ? "" : (
-          <IconButton tooltip="Cut" onTouchTap={props.cutParent}>
+          <IconButton tooltip="" onTouchTap={props.cutParent}>
             <ContentContentCut />
           </IconButton>
         );
         $input = (
           <form ref="menu" style={{position : 'absolute'}}>
-            <IconButton tooltip="Add" onTouchTap={props.addNode}>
+            <IconButton tooltip="" onTouchTap={props.addNode}>
               <ContentAddBox />
             </IconButton>
-            <IconButton tooltip="Edit" onTouchTap={props.readyChangeText}>
+            <IconButton tooltip="" onTouchTap={props.readyChangeText}>
               <ContentCreate />
             </IconButton>
+            <IconButton tooltip="" onTouchTap={props.selectFamily}>
+              <HardwareDeviceHub />
+            </IconButton>
             {cutButton}
-            <IconButton tooltip="Delete" onTouchTap={props.removeNode}>
+            <IconButton tooltip="" onTouchTap={props.removeNode}>
               <ContentDeleteSweep />
             </IconButton>
           </form>
@@ -179,9 +183,11 @@ class Bnet extends React.Component {
               for (let k in props.nodeMap) {
                 let node = props.nodeMap[k];
                 let size = sizeMap[node.id] || 0;
+                let family = (k in props.targetFamily);
                 list.push(
                   <Node key={node.id} id={node.id} text={node.text} x={node.x} y={node.y} target={node.id === props.target}
-                    state={node.state} readyChangeText={props.readyChangeText} selectNode={props.selectNode} refSize={size} />
+                    state={node.state} readyChangeText={props.readyChangeText} selectNode={props.selectNode} refSize={size}
+                    family={family} />
                 );
 
                 let parent = props.nodeMap[node.parentId];

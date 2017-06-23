@@ -41,11 +41,19 @@ svg text {
   stroke : black;
   text-anchor : middle;
 }
-svg g.target rect {
+svg g.target rect, {
   fill : rgb(0, 188, 212);;
   stroke : #666;
 }
 svg g.target text {
+  fill : #fff;
+  stroke : #fff;
+}
+svg g.family rect, {
+  fill : rgb(0, 188, 212);;
+  stroke : #666;
+}
+svg g.family text {
   fill : #fff;
   stroke : #fff;
 }

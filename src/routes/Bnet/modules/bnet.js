@@ -29,6 +29,8 @@ export const BNET_CURSOR_PINCH = 'BNET_CURSOR_PINCH'
 export const BNET_NOT_AUTH = 'BNET_NOT_AUTH'
 export const BNET_CLEAR = 'BNET_CLEAR'
 
+export const BNET_SELECT_FAMILY = 'BNET_SELECT_FAMILY'
+
 const DEFAULT_ROOM = 'bnet-default'
 
 // ------------------------------------
@@ -222,8 +224,15 @@ export function removeNode () {
   return (dispatch, getState) => {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
-    let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-    ref.remove()
+    // ファミリー
+    let updates = {};
+    updates[state.target] = null;
+    for (let k in state.targetFamily) {
+      updates[k] = null;
+    }
+
+    let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
+    ref.update(updates)
     .catch(error => {
       console.log(error);
       return dispatch({
@@ -274,10 +283,6 @@ export function cursorUp (value) {
     if (node) {
       let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
       ref.update(node)
-      .then(() => dispatch({
-        type    : BNET_CURSOR_UP,
-        payload : value
-      }))
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -285,12 +290,12 @@ export function cursorUp (value) {
           message: error.message,
         });
       });
-    } else {
-      return dispatch({
+    }
+
+    return dispatch({
         type    : BNET_CURSOR_UP,
         payload : value
       });
-    }
   }
 }
 
@@ -303,8 +308,15 @@ export function cursorMove (value) {
       if (node) {
         // ノードを移動
         let nextNode = moveNode(state, value.x, value.y, node);
-        let ref = firebaseDb.ref(`nodemap/${state.roomId}/${nextNode.id}`);
-        ref.update(nextNode)
+        // ファミリー
+        let nextFamily = {};
+        nextFamily[state.target] = nextNode;
+        for (let k in state.targetFamily) {
+          let n = state.nodeMap[k];
+          nextFamily[k] = moveNode(state, value.x, value.y, n, true);
+        }
+        let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
+        ref.update(nextFamily)
         .catch(error => {
           console.log(error);
           return dispatch({
@@ -363,6 +375,13 @@ export function postPassword (value) {
   }
 }
 
+function selectFamily(value){
+  return {
+    type: BNET_SELECT_FAMILY,
+    payload: value
+  }
+}
+
 export const actions = {
   loadTodos,
   changeText,
@@ -379,6 +398,7 @@ export const actions = {
   cursorWheel,
   cursorPinch,
   postPassword,
+  selectFamily
 }
 
 // ------------------------------------
@@ -490,6 +510,7 @@ const ACTION_HANDLERS = {
     return Object.assign({}, state, {
       state : 1,
       target : node.id,
+      targetFamily : {},
       // viewArea : viewArea,
     });
   },
@@ -498,9 +519,11 @@ const ACTION_HANDLERS = {
     delete nextNodeMap[action.payload.id];
 
     let target = state.target;
+    let targetFamily = state.targetFamily;
     // 選択ノードが削除された
     if (target === action.payload.id) {
       target = null;
+      targetFamily = {};
     }
 
     return Object.assign({}, 
@@ -509,6 +532,7 @@ const ACTION_HANDLERS = {
         nodeMap : nextNodeMap,
         state : 0,
         target : target,
+        targetFamily : targetFamily,
       });
   },
   [BNET_SELECT_NODE] : (state, action) => {
@@ -521,6 +545,7 @@ const ACTION_HANDLERS = {
       state, 
       {
         target : action.payload,
+        targetFamily : state.target === action.payload ? state.targetFamily : {},
       });
   },
   [BNET_CURSOR_DOWN] : (state, action) => {
@@ -568,6 +593,7 @@ const ACTION_HANDLERS = {
         state : s,
         lastDownTime : action.payload.time,
         target : target,
+        targetFamily : state.target === target ? state.targetFamily : {},
         viewArea : viewArea
       });
   },
@@ -644,6 +670,47 @@ const ACTION_HANDLERS = {
         }),
       });
   },
+  [BNET_SELECT_FAMILY] : (state, action) => {
+    if (Object.keys(state.targetFamily).length) {
+      return Object.assign({},
+      state, 
+      {
+        targetFamily : {},
+      });
+    }
+
+    let root = state.nodeMap[state.target];
+    let allFamily = {};
+    allFamily[state.target] = true;
+    let targetFamily = {};
+    let nodeMap = Object.assign({}, state.nodeMap);
+    delete nodeMap[state.target];
+
+    let loop = true;
+    while (loop) {
+      loop = false;
+      for (let k in nodeMap) {
+        let n = nodeMap[k];
+        if (n.parentId && allFamily[n.parentId]) {
+          targetFamily[k] = true;
+          allFamily[k] = true;
+          delete nodeMap[k];
+          loop = true;
+        }
+      }
+
+      // 探査終了
+      if (!loop) {
+        break;
+      }
+    }
+
+    return Object.assign({},
+      state, 
+      {
+        targetFamily : targetFamily,
+      });
+  },
 }
 
 // ------------------------------------
@@ -661,6 +728,7 @@ const initialState = {
   state : 0,
   notAuth : false,
   target : null,
+  targetFamily : {},
   menuPoint : {
     x : 0,
     y : 0
