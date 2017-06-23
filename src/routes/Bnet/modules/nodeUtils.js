@@ -170,3 +170,26 @@ export function moveNode(state, x, y, node, notConnect) {
 
   return nextNode;
 }
+
+export function moveNodeAtPoint(state, x, y, node, notConnect) {
+  let fP = v2f(state.viewArea, {x:x,y:y});
+  
+  // node移動
+  let nextNode = Object.assign({}, node, fP);
+
+  if (!notConnect) {
+    for (let k in state.nodeMap) {
+      let other = state.nodeMap[k];
+      // 自分と子供は除外
+      if (other !== node && other.parentId !== node.id) {
+        let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
+        if (d2 / state.viewArea.scale < 1000) {
+          nextNode.parentId = other.id;
+          break;
+        }
+      }
+    }
+  }
+
+  return nextNode;
+}

@@ -2,7 +2,7 @@ import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
 const ref = firebaseDb.ref('nodemap');
 
 import {v2f, f2v, wheelCanvas, pinchCanvas} from './canvasUtils'
-import {createNode, assignNode, createNewNode, getBetterPoint, moveNode} from './nodeUtils'
+import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNodeAtPoint} from './nodeUtils'
 
 // ------------------------------------
 // Constants
@@ -66,9 +66,19 @@ export function loadTodos() {
               dispatch(loadTodosError(error));
             }
           );
+          // 大量ノード同時編集に対応するためinvalidate実装を行う
+          let timer = null;
+          let info = {};
           ref.on('child_changed',
             (snapshot) => {
-              dispatch(chnageNodeSuccess(snapshot));
+              info[snapshot.key] = snapshot.val();
+              if (timer) {
+                clearTimeout(timer);
+              }
+              timer = setTimeout(() => {
+                dispatch(chnageNodeSuccess(info));
+                info = {};
+              }, 0);
             },
             (error) => {
               dispatch(loadTodosError(error));
@@ -159,10 +169,10 @@ export function completeChangeText () {
   }
 }
 
-function chnageNodeSuccess(snapshot){
+function chnageNodeSuccess(val){
   return {
     type: BNET_CHANGE_NODE,
-    payload: snapshot.val()
+    payload: val
   }
 }
 
@@ -307,13 +317,20 @@ export function cursorMove (value) {
       let node = state.nodeMap[state.target];
       if (node) {
         // ノードを移動
-        let nextNode = moveNode(state, value.x, value.y, node);
+        let nextNode = moveNodeAtPoint(state, value.x, value.y, node);
+        let dx = nextNode.x - node.x;
+        let dy = nextNode.y - node.y;
         // ファミリー
         let nextFamily = {};
         nextFamily[state.target] = nextNode;
         for (let k in state.targetFamily) {
           let n = state.nodeMap[k];
-          nextFamily[k] = moveNode(state, value.x, value.y, n, true);
+          if (n) {
+            nextFamily[k] =Object.assign({}, n, {
+              x : n.x + dx,
+              y : n.y + dy,
+            }) 
+          }
         }
         let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
         ref.update(nextFamily)
@@ -479,9 +496,7 @@ const ACTION_HANDLERS = {
       });
   },
   [BNET_CHANGE_NODE] : (state, action) => {
-    let node = action.payload;
-    let nextNodeMap = Object.assign({}, state.nodeMap);
-    nextNodeMap[node.id] = node;
+    let nextNodeMap = Object.assign({}, state.nodeMap, action.payload);
     return Object.assign({}, 
       state, 
       {
