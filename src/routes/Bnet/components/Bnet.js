@@ -19,8 +19,6 @@ class Bnet extends React.Component {
   static propTypes = {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
-
-    changeText: PropTypes.func.isRequired,
   }
 
   componentDidUpdate () {
@@ -81,7 +79,7 @@ class Bnet extends React.Component {
       if (node) {
         $input = (
           <form ref="menu" onSubmit={props.completeChangeText} style={{position : 'absolute'}}>
-            <TextField name="textInput" ref="textInput" value={node.text} onChange={props.changeText} style={{backgroundColor:'#fff'}} inputStyle={{textAlign : 'center'}} />
+            <TextField name="nodeText" ref="textInput" defaultValue={node.text} style={{backgroundColor:'#fff'}} inputStyle={{textAlign : 'center'}} />
           </form>
         );
       }

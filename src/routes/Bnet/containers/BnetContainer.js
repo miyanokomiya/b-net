@@ -61,11 +61,10 @@ const mapDispatchToProps = {
   loadTodos : () => actions.loadTodos(),
   increment : () => actions.increment(3),
   doubleAsync : () => actions.doubleAsync(),
-  changeText : (e) => actions.changeText(e.target.value),
   readyChangeText : () => actions.readyChangeText(),
   completeChangeText : (e) => {
     e.preventDefault();
-    return actions.completeChangeText();
+    return actions.completeChangeText(e.target.nodeText.value);
   },
   fieldClick : (e) => {
     let p = getPoint(e);

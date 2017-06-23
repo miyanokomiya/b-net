@@ -136,7 +136,14 @@ function loadTodosError(error){
   }
 }
 
-export function changeText (value = "") {
+export function readyChangeText (value = "") {
+  return {
+    type    : BNET_READY_CHANGE_TEXT,
+    payload : value
+  }
+}
+
+export function completeChangeText (value = "") {
   return (dispatch, getState) => {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
@@ -144,6 +151,12 @@ export function changeText (value = "") {
       let nextNode = Object.assign({}, node, {text : value});
       let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
       ref.update(nextNode)
+      .then(() => {
+        return dispatch({
+          type    : BNET_COMPLETE_CHANGE_TEXT,
+          payload : 0
+        });
+      })
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -152,20 +165,6 @@ export function changeText (value = "") {
         });
       });
     }
-  }
-}
-
-export function readyChangeText (value = "") {
-  return {
-    type    : BNET_READY_CHANGE_TEXT,
-    payload : value
-  }
-}
-
-export function completeChangeText () {
-  return {
-    type    : BNET_COMPLETE_CHANGE_TEXT,
-    payload : 0
   }
 }
 
@@ -401,7 +400,6 @@ function selectFamily(value){
 
 export const actions = {
   loadTodos,
-  changeText,
   readyChangeText,
   completeChangeText,
   fieldClick,
