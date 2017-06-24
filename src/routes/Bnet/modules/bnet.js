@@ -294,30 +294,28 @@ export function cursorDown (value) {
 }
 
 export function cursorUp (value) {
-  return (dispatch, getState) => {
-    let state = getState().bnet;
-    let node = state.nodeMap[state.target];
-    if (node) {
-      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-      ref.update(node)
-      .catch(error => {
-        console.log(error);
-        return dispatch({
-          type: 'SAVE_NODE_ERROR',
-          message: error.message,
-        });
-      });
-    }
-
-    return dispatch({
-        type    : BNET_CURSOR_UP,
-        payload : value
-      });
+  // ノード移動を完了させる
+  cursorMoveCommitExec();
+  return {
+    type    : BNET_CURSOR_UP,
+    payload : value
   }
 }
 
+// ノード移動における通信量削減のための努力
 let cursorMoveCommitTimer = null;
 let cursorMoveCommitData = null;
+let cursorMoveCommitFunc = null;
+let cursorMoveCommitExec = () => {
+  if (!cursorMoveCommitTimer) {
+    clearTimeout(cursorMoveCommitTimer);
+  }
+  cursorMoveCommitTimer = null;
+  if (cursorMoveCommitFunc) {
+    cursorMoveCommitFunc();
+    cursorMoveCommitFunc = null;
+  }
+};
 
 export function cursorMove (value) {
   return (dispatch, getState) => {
@@ -336,33 +334,47 @@ export function cursorMove (value) {
         for (let k in state.targetFamily) {
           let n = state.nodeMap[k];
           if (n) {
-            nextFamily[k] =Object.assign({}, n, {
+            nextFamily[k] = Object.assign({}, n, {
               x : n.x + dx,
               y : n.y + dy,
-            }) 
+            });
           }
         }
 
         cursorMoveCommitData = nextFamily;
+        let count = Object.keys(cursorMoveCommitData).length;
+
+        // 移動が一定時間止まった場合のみコミットするならこの処理入れる
+        // インターバル通信で十分か？
+        // if (count > 1) {
+        //   if (cursorMoveCommitTimer) {
+        //     clearTimeout(cursorMoveCommitTimer);
+        //     cursorMoveCommitTimer = null;
+        //   }
+        // }
+
+        // ローカルでは即時反映に見せる
+        value = Object.assign({}, value, {
+          nodeMap : cursorMoveCommitData,
+        });
 
         if (!cursorMoveCommitTimer) {
-          cursorMoveCommitTimer = setTimeout(() => {
-            cursorMoveCommitTimer = null;
-            // ドラッグ状態だった場合だけコミット
-            let state = getState().bnet;
-            if (state.cursorState.drag) {
-              let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
-              ref.update(cursorMoveCommitData)
-              .catch(error => {
-                console.log(error);
-                return dispatch({
-                  type: 'SAVE_NODE_ERROR',
-                  payload: error.message,
-                });
+          cursorMoveCommitFunc = () => {
+            let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
+            ref.update(cursorMoveCommitData)
+            .catch(error => {
+              console.log(error);
+              return dispatch({
+                type: 'SAVE_NODE_ERROR',
+                payload: error.message,
               });
-            }
-            // 10〜200の範囲で要素数に応じてインターバルを増やす
-          }, 10 + Math.min(Object.keys(cursorMoveCommitData).length * 10, 190));
+            });
+          }
+
+          cursorMoveCommitTimer = setTimeout(() => {
+            cursorMoveCommitExec();
+            // 要素数に応じてインターバルを増やす
+          }, 30 + Math.min((count - 1) * 50, 970));
         }
         
         return dispatch({
@@ -655,6 +667,7 @@ const ACTION_HANDLERS = {
       });
   },
   [BNET_CURSOR_MOVE] : (state, action) => {
+    let nodeMap = action.payload.nodeMap || state.nodeMap;
     return Object.assign({}, 
       state, 
       {
@@ -664,6 +677,7 @@ const ACTION_HANDLERS = {
           y : action.payload.y,
         }),
         state : 0,
+        nodeMap : Object.assign({}, state.nodeMap, nodeMap)
       });
   },
   [BNET_MOVE_VIEW] : (state, action) => {
