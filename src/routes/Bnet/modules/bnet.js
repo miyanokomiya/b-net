@@ -1,5 +1,4 @@
 import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
-const ref = firebaseDb.ref('nodemap');
 
 import {v2f, f2v, wheelCanvas, pinchCanvas} from './canvasUtils'
 import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNodeAtPoint, getDescentMap} from './nodeUtils'

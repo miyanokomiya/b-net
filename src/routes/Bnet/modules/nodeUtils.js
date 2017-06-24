@@ -17,13 +17,13 @@ export function generateUuid() {
     return chars.join("");
 }
 
-export function createNode(ignoreId) {
+export function createNode() {
   return {
     x : 0,
     y : 0,
     parentId : null,
     text : "",
-    id : ignoreId ? "" : generateUuid(),
+    id : "",
     childIdList : [],
     shape : 0,
   };
@@ -31,7 +31,7 @@ export function createNode(ignoreId) {
 
 // nodeの不足プロパティを補う
 export function assignNode(node) {
-  let init = createNode(true);
+  let init = createNode();
   return Object.assign({}, init, node);
 }
 

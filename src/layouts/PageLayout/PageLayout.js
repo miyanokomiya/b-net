@@ -6,6 +6,7 @@ import AppBar from 'material-ui/AppBar';
 import ActionHome from 'material-ui/svg-icons/action/home'
 import IconButton from 'material-ui/IconButton'
 import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 class PageLayout extends React.Component {
   static propTypes = {
@@ -28,16 +29,18 @@ class PageLayout extends React.Component {
 
     return (
       <div className='container text-center'>
-        <AppBar 
-          title={linkList}
-          showMenuIconButton={true}
-          iconElementLeft={
-            <Link to='/room'>
-              <IconButton><ActionHome color={fullWhite} /></IconButton>
-            </Link>
-          }
-          style={{backgroundColor:blue500}}
-        />
+        <MuiThemeProvider>
+          <AppBar 
+            title={linkList}
+            showMenuIconButton={true}
+            iconElementLeft={
+              <Link to='/room'>
+                <IconButton><ActionHome color={fullWhite} /></IconButton>
+              </Link>
+            }
+            style={{backgroundColor:blue500}}
+          />
+        </MuiThemeProvider>
         <div className='page-layout__viewport'>
           {children}
         </div>
