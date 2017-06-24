@@ -19,14 +19,36 @@ class Node extends React.Component {
     var bbox = text.getBBox();
 
     if (props.shape === 1) {
-      let ellipse = ReactDOM.findDOMNode(this.refs.ellipse);
-      let margin = 8;
-      ellipse.rx.baseVal.value = (bbox.width) / 2 + margin;
-      ellipse.ry.baseVal.value = (bbox.height) / 2 + margin;
+      let ellipse = ReactDOM.findDOMNode(this.refs.shape);
+      let edgeH = 8 + bbox.width / 10;
+      let edgeV = 8 + edgeH / 10;
+      ellipse.rx.baseVal.value = (bbox.width) / 2 + edgeH;
+      ellipse.ry.baseVal.value = (bbox.height) / 2 + edgeV;
       ellipse.cx.baseVal.value = bbox.x + bbox.width / 2;
       ellipse.cy.baseVal.value = bbox.y + bbox.height / 2;
+    } else if (props.shape === 2) {
+      let circle = ReactDOM.findDOMNode(this.refs.shape);
+      let margin = 8;
+      circle.r.baseVal.value = (Math.max(bbox.width, bbox.height)) / 2 + margin;
+      circle.cx.baseVal.value = bbox.x + bbox.width / 2;
+      circle.cy.baseVal.value = bbox.y + bbox.height / 2;
+    } else if (props.shape === 3) {
+      let polygon = ReactDOM.findDOMNode(this.refs.shape);
+      let margin = 48;
+      let cx = bbox.x + bbox.width / 2;
+      let cy = bbox.y + bbox.height / 2;
+      let edgeH = bbox.width * 2 / 5;
+      let edgeV = bbox.height / 3 + edgeH / 5;
+      polygon.points[0].x = cx - bbox.width/2 - edgeH;
+      polygon.points[0].y = cy;
+      polygon.points[1].x = cx;
+      polygon.points[1].y = cy + bbox.height/2 + edgeV;
+      polygon.points[2].x = cx + bbox.width/2 + edgeH;
+      polygon.points[2].y = cy;
+      polygon.points[3].x = cx;
+      polygon.points[3].y = cy - bbox.height/2 - edgeV;
     } else {
-      let rect = ReactDOM.findDOMNode(this.refs.rect);
+      let rect = ReactDOM.findDOMNode(this.refs.shape);
       let margin = 5;
       rect.x.baseVal.value = bbox.x - margin;
       rect.y.baseVal.value = bbox.y - margin;
@@ -43,7 +65,7 @@ class Node extends React.Component {
     let props = this.props;
     let width = props.text.length * 20;
     let height = 30 + props.refSize * 7;
-    let className = "";
+    let className = "node ";
     if (props.target) {
       className += "target ";
     }
@@ -54,11 +76,19 @@ class Node extends React.Component {
     let shape = "";
     if (props.shape === 1) {
       shape = (
-        <ellipse className="shape" ref="ellipse" rx={width/2} ry={height/2} cx={props.x + width / 2} cy={props.y + height * 4 / 5} />
+        <ellipse className="shape" ref="shape" rx={width/2} ry={height/2} cx={props.x + width / 2} cy={props.y + height * 4 / 5} />
+      );
+    } else if (props.shape === 2) {
+      shape = (
+        <circle className="shape" ref="shape" x={Math.max(width/2, height/2)} cx={props.x + width / 2} cy={props.y + height * 4 / 5} />
+      );
+    } else if (props.shape === 3) {
+      shape = (
+        <polygon className="shape" ref="shape" points="0,0 0,0 0,0 0,0" />
       );
     } else {
       shape = (
-        <rect className="shape" ref="rect" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} />
+        <rect className="shape" ref="shape" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} />
       );
     }
 

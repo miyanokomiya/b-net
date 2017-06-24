@@ -67,6 +67,8 @@ class EditNodeMenu extends React.Component {
       >
         <MenuItem value={0} primaryText="Rectangle" />
         <MenuItem value={1} primaryText="Elipse" />
+        <MenuItem value={2} primaryText="Circle" />
+        <MenuItem value={3} primaryText="Diamond" />
       </IconMenu>
     );
     // 子孫がいるなら子孫一括選択ボタンを表示

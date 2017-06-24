@@ -33,6 +33,9 @@ svg line.ancestor-line {
     stroke-dashoffset: 1000;
   }
 }
+svg g.node {
+  cursor : pointer;
+}
 svg .shape {
   fill : #fff;
   stroke : #666;
