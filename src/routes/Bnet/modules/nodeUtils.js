@@ -273,3 +273,19 @@ export function getDescentMap(nodeMap, targetId, withMyself) {
 
   return allFamily;
 }
+
+export function getSizeMap(nodeMap) {
+  let sizeMap = {};
+  for (let k in nodeMap) {
+    let node = nodeMap[k];
+    if (node.parentId) {
+      if (sizeMap[node.parentId]) {
+        sizeMap[node.parentId]++;
+      } else {
+        sizeMap[node.parentId] = 1;
+      }
+    }
+  }
+
+  return sizeMap;
+}

@@ -33,31 +33,29 @@ class RoomCard extends React.Component {
       props.deleteRoom(props.id);
     }
 
+    let titleLink = (
+      <Link to={`/bnet?room-id=${props.id}`}>
+        {props.name || "No Name"}
+      </Link>
+    );
+
     return (
       <div>
         <Card>
-          <Link to={`/bnet?room-id=${props.id}`}>
-            <CardHeader
-              title={props.name}
-              subtitle={date.toLocaleString()}
-              actAsExpander={false}
-              showExpandableButton={false}
-            />
-          </Link>
-          <CardActions>
+          <CardHeader
+            title={titleLink}
+            subtitle={`Created: ${date.toLocaleString()}`}
+            actAsExpander={true}
+            showExpandableButton={true}
+          />
+          <CardText expandable={true}>
             <IconButton tooltip="Edit" onTouchTap={readyEditRoom}>
               <ContentCreate />
             </IconButton>
             <IconButton tooltip="Delete" onTouchTap={deleteRoom}>
               <ContentDeleteSweep />
             </IconButton>
-          </CardActions>
-          {/*<CardText expandable={true}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            Donec mattis pretium massa. Aliquam erat volutpat. Nulla facilisi.
-            Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
-            Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
-          </CardText>*/}
+          </CardText>
         </Card>
       </div>
     )

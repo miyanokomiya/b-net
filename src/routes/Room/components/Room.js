@@ -10,6 +10,7 @@ import TextField from 'material-ui/TextField'
 import IconButton from 'material-ui/IconButton'
 import ContentCreate from 'material-ui/svg-icons/content/create'
 import RoomAddDialog from './RoomAddDialog'
+import {fullWhite} from 'material-ui/styles/colors';
 
 class Room extends React.Component {
   static propTypes = {
@@ -21,6 +22,9 @@ class Room extends React.Component {
   };
 
   componentDidUpdate () {
+    if (this.refs.roomNameInput) {
+      this.refs.roomNameInput.focus();
+    }
   }
 
   componentDidMount () {
@@ -118,12 +122,12 @@ class Room extends React.Component {
           <FlatButton
             label="Delete"
             primary={true}
-            keyboardFocused={true}
             onTouchTap={execDeleteRoom}
           />,
           <FlatButton
             label="Cancel"
             primary={true}
+            keyboardFocused={true}
             onTouchTap={cancelDeleteRoom}
           />,
         ]}
@@ -136,9 +140,18 @@ class Room extends React.Component {
 
     return (
       <div>
-        <IconButton tooltip="Add" onTouchTap={this.openAddDialog}>
+        {/*<IconButton tooltip="Add" onTouchTap={this.openAddDialog}>
           <ContentAddBox />
-        </IconButton>
+        </IconButton>*/}
+        <FlatButton
+          backgroundColor="#a4c639"
+          hoverColor="#8AA62F"
+          icon={<ContentAddBox color={fullWhite} />}
+          style={{
+            margin: "5px 0", width: "100%",
+          }}
+          onTouchTap={this.openAddDialog}
+        />
         {(function() {
           let list = [];
           for (let k in props.roomMap) {

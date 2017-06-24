@@ -5,6 +5,7 @@ import './PageLayout.scss'
 import AppBar from 'material-ui/AppBar';
 import ActionHome from 'material-ui/svg-icons/action/home'
 import IconButton from 'material-ui/IconButton'
+import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
 
 class PageLayout extends React.Component {
   static propTypes = {
@@ -32,9 +33,10 @@ class PageLayout extends React.Component {
           showMenuIconButton={true}
           iconElementLeft={
             <Link to='/room'>
-              <IconButton><ActionHome /></IconButton>
+              <IconButton><ActionHome color={fullWhite} /></IconButton>
             </Link>
           }
+          style={{backgroundColor:blue500}}
         />
         <div className='page-layout__viewport'>
           {children}

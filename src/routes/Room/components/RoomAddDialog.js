@@ -14,6 +14,9 @@ class RoomCard extends React.Component {
   }
 
   componentDidUpdate () {
+    if (this.refs.roomNameInput) {
+      this.refs.roomNameInput.focus();
+    }
   }
 
   componentDidMount () {
@@ -35,7 +38,6 @@ class RoomCard extends React.Component {
       <FlatButton
         label="Create"
         primary={true}
-        keyboardFocused={true}
         onTouchTap={submit}
       />,
       <FlatButton
@@ -52,26 +54,36 @@ class RoomCard extends React.Component {
           actions={actions}
           modal={false}
           open={true}
-          onRequestClose={props.cancel} >
-          <TextField
-            floatingLabelText="Name"
-            floatingLabelFixed={true}
-            ref="roomNameInput"
-          />
-          <br/>
-          <TextField
-            hintText="Omissible"
-            floatingLabelText="Password"
-            floatingLabelFixed={true}
-            ref="roomPasswordInput"
-          />
-          <br/>
-          <TextField
-            hintText="Omissible"
-            floatingLabelText="Hint"
-            floatingLabelFixed={true}
-            ref="roomHintInput"
-          />
+          onRequestClose={props.cancel}
+        >
+          <form onSubmit={submit}>
+            <TextField
+              floatingLabelText="Name"
+              floatingLabelFixed={true}
+              ref="roomNameInput"
+            />
+            <br/>
+            <TextField
+              hintText="Omissible"
+              floatingLabelText="Password"
+              floatingLabelFixed={true}
+              type="password"
+              ref="roomPasswordInput"
+            />
+            <br/>
+            <TextField
+              hintText="Omissible"
+              floatingLabelText="Hint of password"
+              floatingLabelFixed={true}
+              ref="roomHintInput"
+            />
+            <FlatButton
+              type="submit"
+              label="Submit"
+              primary={true}
+              style={{display:"none"}}
+            />
+          </form>
         </Dialog>
       </div>
     )

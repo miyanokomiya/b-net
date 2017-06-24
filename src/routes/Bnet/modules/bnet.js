@@ -9,10 +9,10 @@ import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNod
 // ------------------------------------
 export const BNET_RECEIVE_ROOM = 'BNET_RECEIVE_ROOM'
 export const BNET_RECEIVE_DATA = 'BNET_RECEIVE_DATA'
-export const BNET_CHANGE_TEXT = 'BNET_CHANGE_TEXT'
+
 export const BNET_READY_CHANGE_TEXT = 'BNET_READY_CHANGE_TEXT'
 export const BNET_COMPLETE_CHANGE_TEXT = 'BNET_COMPLETE_CHANGE_TEXT'
-export const BNET_STORE_MENU_POINT = 'BNET_STORE_MENU_POINT'
+
 export const BNET_ADD_NODE = 'BNET_ADD_NODE'
 export const BNET_SELECT_AND_READY_CHANGE_TEXT = 'BNET_ABNET_SELECT_AND_READY_CHANGE_TEXTDD_NODE_AND_EDIT'
 export const BNET_REMOVE_NODE = 'BNET_REMOVE_NODE'
@@ -173,13 +173,6 @@ function chnageNodeSuccess(val){
   return {
     type: BNET_CHANGE_NODE,
     payload: val
-  }
-}
-
-export function fieldClick (value) {
-  return {
-    type    : BNET_STORE_MENU_POINT,
-    payload : value
   }
 }
 
@@ -438,7 +431,6 @@ export const actions = {
   loadTodos,
   readyChangeText,
   completeChangeText,
-  fieldClick,
   cutParent,
   addNode,
   removeNode,
@@ -493,6 +485,7 @@ const ACTION_HANDLERS = {
     if (action.payload.changeRoom) {
       viewArea.left = 0;
       viewArea.top = 0;
+      viewArea.scale = 2;
     }
 
     return Object.assign({}, 
@@ -501,19 +494,6 @@ const ACTION_HANDLERS = {
         nodeMap : nodeMap,
         viewArea : viewArea,
         notAuth : false,
-      });
-  },
-  [BNET_CHANGE_TEXT] : (state, action) => {
-    let node = state.nodeMap[state.target];
-    let obj = {};
-    obj[node.id] = Object.assign({}, node, {
-      text : action.payload
-    });
-
-    return Object.assign({}, 
-      state, 
-      {
-        nodeMap : Object.assign({}, state.nodeMap, obj)
       });
   },
   [BNET_READY_CHANGE_TEXT] : (state, action) => {

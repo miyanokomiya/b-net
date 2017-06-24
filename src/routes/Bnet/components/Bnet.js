@@ -13,8 +13,9 @@ import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
 import {f2v} from '../modules/canvasUtils'
-import {getAncestorMap} from '../modules/nodeUtils'
+import {getAncestorMap, getSizeMap} from '../modules/nodeUtils'
 import HardwareDeviceHub from 'material-ui/svg-icons/hardware/device-hub'
+import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -75,6 +76,21 @@ class Bnet extends React.Component {
     let props = this.props;
 
     let $input = "";
+
+    let iconSize = 18;
+    let buttonStyle = {
+      backgroundColor: blue500,
+      borderRadius: "3px",
+      width: iconSize*2,
+      height: iconSize*2,
+      padding: iconSize/2,
+      margin: 1,
+    };
+    let iconStyle = {
+      width: iconSize,
+      height: iconSize,
+    };
+
     if (props.state === 1) {
       let node = props.nodeMap[props.target];
       if (node) {
@@ -87,8 +103,8 @@ class Bnet extends React.Component {
     } else if (props.state === 2) {
       $input = (
         <form ref="menu" style={{position : 'absolute'}}>
-          <IconButton tooltip="" onTouchTap={props.addNode}>
-            <ContentAddBox />
+          <IconButton tooltip="" onTouchTap={props.addNode} style={buttonStyle} iconStyle={iconStyle}>
+            <ContentAddBox color={fullWhite} />
           </IconButton>
         </form>
       );
@@ -96,24 +112,24 @@ class Bnet extends React.Component {
       let node = props.nodeMap[props.target];
       if (node) {
         let cutButton = !props.nodeMap[node.parentId] ? "" : (
-          <IconButton tooltip="" onTouchTap={props.cutParent}>
-            <ContentContentCut />
+          <IconButton tooltip="" onTouchTap={props.cutParent} style={buttonStyle} iconStyle={iconStyle}>
+            <ContentContentCut color={fullWhite} />
           </IconButton>
         );
         $input = (
           <form ref="menu" style={{position : 'absolute'}}>
-            <IconButton tooltip="" onTouchTap={props.addNode}>
-              <ContentAddBox />
+            <IconButton tooltip="" onTouchTap={props.addNode} style={buttonStyle} iconStyle={iconStyle}>
+              <ContentAddBox color={fullWhite} />
             </IconButton>
-            <IconButton tooltip="" onTouchTap={props.readyChangeText}>
-              <ContentCreate />
+            <IconButton tooltip="" onTouchTap={props.readyChangeText} style={buttonStyle} iconStyle={iconStyle}>
+              <ContentCreate color={fullWhite} />
             </IconButton>
-            <IconButton tooltip="" onTouchTap={props.selectFamily}>
-              <HardwareDeviceHub />
+            <IconButton tooltip="" onTouchTap={props.selectFamily} style={buttonStyle} iconStyle={iconStyle}>
+              <HardwareDeviceHub color={fullWhite} />
             </IconButton>
             {cutButton}
-            <IconButton tooltip="" onTouchTap={props.removeNode}>
-              <ContentDeleteSweep />
+            <IconButton tooltip="" onTouchTap={props.removeNode} style={buttonStyle} iconStyle={iconStyle}>
+              <ContentDeleteSweep color={fullWhite} />
             </IconButton>
           </form>
         );
@@ -139,9 +155,10 @@ class Bnet extends React.Component {
         modal={true}
         open={true} >
         <TextField
-          hintText={"Hint:" + props.room.hint}
+          hintText={"Hint: " + props.room.hint}
           floatingLabelText="Password"
           floatingLabelFixed={true}
+          type="password"
           ref="password"
         />
       </Dialog>
@@ -153,7 +170,6 @@ class Bnet extends React.Component {
       <div ref="svgBox" className="svg-box" >
         <svg className="svg-canvas" version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
             viewBox={vewBox}
-            onClick={props.fieldClick}
             onMouseDown={props.cursorDown}
             onMouseUp={props.cursorUp}
             onMouseLeave={props.cursorUp}
@@ -165,17 +181,7 @@ class Bnet extends React.Component {
             onTouchMove={props.cursorMove} >
           {
             (function() {
-              let sizeMap = {};
-              for (let k in props.nodeMap) {
-                let node = props.nodeMap[k];
-                if (node.parentId) {
-                  if (sizeMap[node.parentId]) {
-                    sizeMap[node.parentId]++;
-                  } else {
-                    sizeMap[node.parentId] = 1;
-                  }
-                }
-              }
+              let sizeMap = getSizeMap(props.nodeMap);
 
               let ancestorMap = getAncestorMap(props.nodeMap, props.target);
 
@@ -203,8 +209,13 @@ class Bnet extends React.Component {
                 if (parent) {
                   let key = `${node.id}-${parent.id}`;
                   let line = (
-                    <line key={key} x1={node.x} y1={node.y} x2={parent.x} y2={parent.y}
-                      className={ancestorMap[node.id] === parent.id ? "ancestor-line" : ""}/>
+                    <line key={key}
+                      x1={node.x}
+                      y1={node.y}
+                      x2={parent.x}
+                      y2={parent.y}
+                      className={ancestorMap[node.id] === parent.id ? "ancestor-line" : ""}
+                    />
                   )
                   lineList.push(line);
                 }
