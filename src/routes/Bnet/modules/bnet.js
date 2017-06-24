@@ -2,7 +2,7 @@ import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
 const ref = firebaseDb.ref('nodemap');
 
 import {v2f, f2v, wheelCanvas, pinchCanvas} from './canvasUtils'
-import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNodeAtPoint} from './nodeUtils'
+import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNodeAtPoint, getDescentMap} from './nodeUtils'
 
 // ------------------------------------
 // Constants
@@ -19,6 +19,7 @@ export const BNET_REMOVE_NODE = 'BNET_REMOVE_NODE'
 export const BNET_CHANGE_NODE = 'BNET_CHANGE_NODE'
 export const BNET_SELECT_NODE = 'BNET_SELECT_NODE'
 
+export const BNET_CURSOR_DOWN_NODE = 'BNET_CURSOR_DOWN_NODE'
 export const BNET_CURSOR_DOWN = 'BNET_CURSOR_DOWN'
 export const BNET_CURSOR_MOVE = 'BNET_CURSOR_MOVE'
 export const BNET_MOVE_VIEW = 'BNET_MOVE_VIEW'
@@ -278,6 +279,13 @@ export function selectNode (value) {
   }
 }
 
+export function cursorDownNode (value) {
+  return {
+    type    : BNET_CURSOR_DOWN_NODE,
+    payload : value
+  }
+}
+
 export function cursorDown (value) {
   return {
     type    : BNET_CURSOR_DOWN,
@@ -423,6 +431,7 @@ export const actions = {
   addNode,
   removeNode,
   selectNode,
+  cursorDownNode,
   cursorDown,
   cursorUp,
   cursorMove,
@@ -577,6 +586,15 @@ const ACTION_HANDLERS = {
         targetFamily : state.target === action.payload ? state.targetFamily : {},
       });
   },
+  [BNET_CURSOR_DOWN_NODE] : (state, action) => {
+    let newTarget = (action.payload !== state.target);
+    return Object.assign({}, 
+      state, 
+      {
+        target : newTarget ? null : state.target,
+        targetFamily : newTarget ? {} : state.targetFamily,
+      });
+  },
   [BNET_CURSOR_DOWN] : (state, action) => {
     if (action.payload.isMulitTouch) {
       return state;
@@ -708,31 +726,7 @@ const ACTION_HANDLERS = {
       });
     }
 
-    let root = state.nodeMap[state.target];
-    let allFamily = {};
-    allFamily[state.target] = true;
-    let targetFamily = {};
-    let nodeMap = Object.assign({}, state.nodeMap);
-    delete nodeMap[state.target];
-
-    let loop = true;
-    while (loop) {
-      loop = false;
-      for (let k in nodeMap) {
-        let n = nodeMap[k];
-        if (n.parentId && allFamily[n.parentId]) {
-          targetFamily[k] = true;
-          allFamily[k] = true;
-          delete nodeMap[k];
-          loop = true;
-        }
-      }
-
-      // 探査終了
-      if (!loop) {
-        break;
-      }
-    }
+    let targetFamily = getDescentMap(state.nodeMap, state.target);
 
     return Object.assign({},
       state, 

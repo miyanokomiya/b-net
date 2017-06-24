@@ -42,8 +42,12 @@ class Node extends React.Component {
     }
 
     return (
-      <g onMouseDown={props.selectNode} onTouchStart={props.selectNode} data-id={props.id}
-          className={className}>
+      <g onMouseUp={props.selectNode}
+        onTouchEnd={props.selectNode}
+        onMouseDown={props.cursorDownNode}
+        onTouchStart={props.cursorDownNode}
+        data-id={props.id}
+        className={className}>
         <rect ref="rect" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} />
         <text ref="text" x={props.x} y={props.y} fontSize={height} >
           {props.text || "-bnet-"}

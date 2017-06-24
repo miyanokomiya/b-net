@@ -184,7 +184,11 @@ export function moveNodeAtPoint(state, x, y, node, notConnect) {
       if (other !== node && other.parentId !== node.id) {
         let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
         if (d2 / state.viewArea.scale < 1000) {
-          nextNode.parentId = other.id;
+          // さらに子孫も除外する
+          let ancestorMap = getAncestorMap(state.nodeMap, other.id, true);
+          if (!ancestorMap[nextNode.id]) {
+            nextNode.parentId = other.id;
+          }
           break;
         }
       }
@@ -192,4 +196,80 @@ export function moveNodeAtPoint(state, x, y, node, notConnect) {
   }
 
   return nextNode;
+}
+
+/**
+ * 先祖ノードマップを取得する
+ * @param nodeMap {Object} ノードマップ
+ * @param targetId {String} 探査対象ノードID
+ * @param parent2Child {Boolean} trueなら戻り値マップを、親IDをkey、子IDをvalueとする
+ * @return {Object} 子IDをkey、親IDをvalueとしたIDマップ
+ */
+export function getAncestorMap(nodeMap, targetId, parent2Child) {
+  let ancestorMap = {};
+  let current = nodeMap[targetId];
+
+  while (current) {
+    let parent = nodeMap[current.parentId];
+    if (parent && parent !== current) {
+      let key = parent2Child ? current.parentId : current.id;
+      // 循環対策
+      if (!(key in ancestorMap)) {
+        ancestorMap[key] = parent2Child ? current.id : current.parentId;
+        current = parent;
+      } else {
+        current = null;
+      }
+    } else {
+      current = null;
+    }
+  }
+
+  return ancestorMap;
+}
+
+/**
+ * 子孫ノードマップを取得する
+ * @param nodeMap {Object} ノードマップ
+ * @param targetId {String} 探査対象ノードID
+ * @param withMyself {Boolean} 戻り値マップにtargetIdも含めるフラグ
+ * @return {Object} 子IDをkey、親IDをvalueとしたIDマップ
+ */
+export function getDescentMap(nodeMap, targetId, withMyself) {
+  let root = nodeMap[targetId];
+
+  // ルート含めた全子孫マップ
+  let allFamily = {};
+  allFamily[targetId] = true;
+
+  // 探査対象マップ
+  let lestNodeMap = Object.assign({}, nodeMap);
+  delete lestNodeMap[targetId];
+
+  let loop = true;
+  while (loop) {
+    loop = false;
+    for (let k in lestNodeMap) {
+      let n = lestNodeMap[k];
+      if (n.parentId && allFamily[n.parentId]) {
+        // 循環対策
+        if (!(k in allFamily)) {
+          allFamily[k] = true;
+          delete lestNodeMap[k];
+          loop = true;
+        }
+      }
+    }
+
+    // 探査終了
+    if (!loop) {
+      break;
+    }
+  }
+
+  if (!withMyself) {
+    delete allFamily[targetId];
+  }
+
+  return allFamily;
 }

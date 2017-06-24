@@ -13,6 +13,7 @@ import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
 import {f2v} from '../modules/canvasUtils'
+import {getAncestorMap} from '../modules/nodeUtils'
 import HardwareDeviceHub from 'material-ui/svg-icons/hardware/device-hub'
 
 class Bnet extends React.Component {
@@ -176,17 +177,7 @@ class Bnet extends React.Component {
                 }
               }
 
-              let ancestorMap = {};
-              let current = props.nodeMap[props.target];
-              while (current) {
-                let parent = props.nodeMap[current.parentId];
-                if (parent) {
-                  ancestorMap[`${current.id}-${current.parentId}`] = true;
-                  current = parent;
-                } else {
-                  current = null;
-                }
-              }
+              let ancestorMap = getAncestorMap(props.nodeMap, props.target);
 
               let list = [];
               let lineList = [];
@@ -195,8 +186,16 @@ class Bnet extends React.Component {
                 let size = sizeMap[node.id] || 0;
                 let family = (k in props.targetFamily);
                 list.push(
-                  <Node key={node.id} id={node.id} text={node.text} x={node.x} y={node.y} target={node.id === props.target}
-                    state={node.state} readyChangeText={props.readyChangeText} selectNode={props.selectNode} refSize={size}
+                  <Node key={node.id}
+                    id={node.id}
+                    text={node.text}
+                    x={node.x} y={node.y}
+                    target={node.id === props.target}
+                    state={node.state}
+                    readyChangeText={props.readyChangeText}
+                    selectNode={props.selectNode}
+                    cursorDownNode={props.cursorDownNode}
+                    refSize={size}
                     family={family} />
                 );
 
@@ -205,7 +204,7 @@ class Bnet extends React.Component {
                   let key = `${node.id}-${parent.id}`;
                   let line = (
                     <line key={key} x1={node.x} y1={node.y} x2={parent.x} y2={parent.y}
-                      className={ancestorMap[key] ? "ancestor-line" : ""}/>
+                      className={ancestorMap[node.id] === parent.id ? "ancestor-line" : ""}/>
                   )
                   lineList.push(line);
                 }

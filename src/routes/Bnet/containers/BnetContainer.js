@@ -85,6 +85,9 @@ const mapDispatchToProps = {
   selectNode : (e) => {
     return actions.selectNode(e.currentTarget.getAttribute("data-id"));
   },
+  cursorDownNode : (e) => {
+    return actions.cursorDownNode(e.currentTarget.getAttribute("data-id"));
+  },
   cursorDown : (e) => {
     e.preventDefault();
     let p = getPoint(e);
