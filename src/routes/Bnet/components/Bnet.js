@@ -13,9 +13,16 @@ import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
 import {f2v} from '../modules/canvasUtils'
-import {getAncestorMap, getSizeMap} from '../modules/nodeUtils'
+import {getAncestorMap, getDescentMap, getSizeMap} from '../modules/nodeUtils'
 import HardwareDeviceHub from 'material-ui/svg-icons/hardware/device-hub'
 import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
+import ToggleCheckBoxOutlineBlank from 'material-ui/svg-icons/toggle/check-box-outline-blank'
+import ToggleRadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-checked'
+import ToggleStarBorder from 'material-ui/svg-icons/toggle/star-border.js'
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import MenuItem from 'material-ui/MenuItem';
+import IconMenu from 'material-ui/IconMenu';
+import EditNodeMenu from './EditNodeMenu';
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -24,10 +31,6 @@ class Bnet extends React.Component {
   }
 
   componentDidUpdate () {
-    if (this.refs.textInput) {
-      this.refs.textInput.focus();
-    }
-
     let menu = ReactDOM.findDOMNode(this.refs.menu);
     if (menu) {
       let rect = menu.getBoundingClientRect();
@@ -45,6 +48,7 @@ class Bnet extends React.Component {
       if (this.refs.textInput) {
         let input = ReactDOM.findDOMNode(this.refs.textInput);
         input.style.width = rect.width + "px";
+        this.refs.textInput.focus();
       }
     }
   }
@@ -109,30 +113,25 @@ class Bnet extends React.Component {
         </form>
       );
     } else if (props.target && !props.cursorState.drag) {
+
       let node = props.nodeMap[props.target];
       if (node) {
-        let cutButton = !props.nodeMap[node.parentId] ? "" : (
-          <IconButton tooltip="" onTouchTap={props.cutParent} style={buttonStyle} iconStyle={iconStyle}>
-            <ContentContentCut color={fullWhite} />
-          </IconButton>
-        );
+        // 子孫持ちかを調べる
+        let descentMap = getDescentMap(props.nodeMap, node.id);
+
         $input = (
-          <form ref="menu" style={{position : 'absolute'}}>
-            <IconButton tooltip="" onTouchTap={props.addNode} style={buttonStyle} iconStyle={iconStyle}>
-              <ContentAddBox color={fullWhite} />
-            </IconButton>
-            <IconButton tooltip="" onTouchTap={props.readyChangeText} style={buttonStyle} iconStyle={iconStyle}>
-              <ContentCreate color={fullWhite} />
-            </IconButton>
-            <IconButton tooltip="" onTouchTap={props.selectFamily} style={buttonStyle} iconStyle={iconStyle}>
-              <HardwareDeviceHub color={fullWhite} />
-            </IconButton>
-            {cutButton}
-            <IconButton tooltip="" onTouchTap={props.removeNode} style={buttonStyle} iconStyle={iconStyle}>
-              <ContentDeleteSweep color={fullWhite} />
-            </IconButton>
-          </form>
-        );
+          <EditNodeMenu ref="menu"
+            hasDescent={Object.keys(descentMap).length > 0}
+            hasParent={node.parentId !== null}
+            nodeShape={node.shape}
+            addNode={props.addNode}
+            readyChangeText={props.readyChangeText}
+            completeChangeShape={props.completeChangeShape}
+            selectFamily={props.selectFamily}
+            cutParent={props.cutParent}
+            removeNode={props.removeNode}
+             />
+        )
       }
     }
 
@@ -198,6 +197,7 @@ class Bnet extends React.Component {
                     x={node.x} y={node.y}
                     target={node.id === props.target}
                     state={node.state}
+                    shape={node.shape}
                     readyChangeText={props.readyChangeText}
                     selectNode={props.selectNode}
                     cursorDownNode={props.cursorDownNode}

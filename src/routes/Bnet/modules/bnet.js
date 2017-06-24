@@ -169,6 +169,25 @@ export function completeChangeText (value = "") {
   }
 }
 
+function completeChangeShape (value = 0) {
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+    let node = state.nodeMap[state.target];
+    if (node) {
+      let nextNode = Object.assign({}, node, {shape : value});
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+      ref.update(nextNode)
+      .catch(error => {
+        console.log(error);
+        return dispatch({
+          type: 'SAVE_NODE_ERROR',
+          message: error.message,
+        });
+      });
+    }
+  }
+}
+
 function chnageNodeSuccess(val){
   return {
     type: BNET_CHANGE_NODE,
@@ -197,7 +216,9 @@ export function cutParent (value) {
 
 export function addNode () {
   return (dispatch, getState) => {
-    let node = createNewNode(getState().bnet);
+    let node = createNewNode(getState().bnet, true);
+    var newPostKey = firebaseDb.ref().child('posts').push().key;
+    node.id = newPostKey;
     node.created = TIMESTAMP;
     let state = getState().bnet;
     let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
@@ -431,6 +452,7 @@ export const actions = {
   loadTodos,
   readyChangeText,
   completeChangeText,
+  completeChangeShape,
   cutParent,
   addNode,
   removeNode,

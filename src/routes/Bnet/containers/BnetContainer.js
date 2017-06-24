@@ -61,8 +61,10 @@ const mapDispatchToProps = {
   loadTodos : () => actions.loadTodos(),
   readyChangeText : () => actions.readyChangeText(),
   completeChangeText : (e) => {
-    e.preventDefault();
     return actions.completeChangeText(e.target.nodeText.value);
+  },
+  completeChangeShape : (e, value) => {
+    return actions.completeChangeShape(value);
   },
   cutParent : (e) => actions.cutParent(),
   addNode : (e) => {

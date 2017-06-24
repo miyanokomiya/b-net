@@ -33,19 +33,23 @@ svg line.ancestor-line {
     stroke-dashoffset: 1000;
   }
 }
-svg rect {
-  rx : 10;
-  ry : 10;
+svg .shape {
   fill : #fff;
   stroke : #666;
   stroke-width : 4;
+}
+svg rect {
+  rx : 7;
+  ry : 7;
+}
+svg ellipse {
 }
 svg text {
   fill : black;
   stroke : black;
   text-anchor : middle;
 }
-svg g.target rect, {
+svg g.target .shape {
   fill : rgb(0, 188, 212);;
   stroke : #666;
 }
@@ -53,7 +57,7 @@ svg g.target text {
   fill : #fff;
   stroke : #fff;
 }
-svg g.family rect, {
+svg g.family .shape, {
   fill : rgb(0, 188, 212);;
   stroke : #666;
 }

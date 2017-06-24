@@ -25,6 +25,7 @@ export function createNode(ignoreId) {
     text : "",
     id : ignoreId ? "" : generateUuid(),
     childIdList : [],
+    shape : 0,
   };
 }
 
