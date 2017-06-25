@@ -39,14 +39,21 @@ class Node extends React.Component {
       let cy = bbox.y + bbox.height / 2;
       let edgeH = bbox.width * 2 / 5;
       let edgeV = bbox.height / 3 + edgeH / 5;
-      polygon.points[0].x = cx - bbox.width/2 - edgeH;
-      polygon.points[0].y = cy;
-      polygon.points[1].x = cx;
-      polygon.points[1].y = cy + bbox.height/2 + edgeV;
-      polygon.points[2].x = cx + bbox.width/2 + edgeH;
-      polygon.points[2].y = cy;
-      polygon.points[3].x = cx;
-      polygon.points[3].y = cy - bbox.height/2 - edgeV;
+      
+      // pointsはSVGPointListなので仕様に従う
+      // →一部ブラウザでは配列アクセスができなかった
+      let p0 = polygon.points.getItem(0);
+      p0.x = cx - bbox.width/2 - edgeH;
+      p0.y = cy;
+      let p1 = polygon.points.getItem(1);
+      p1.x = cx;
+      p1.y = cy + bbox.height/2 + edgeV;
+      let p2 = polygon.points.getItem(2);
+      p2.x = cx + bbox.width/2 + edgeH;
+      p2.y = cy;
+      let p3 = polygon.points.getItem(3);
+      p3.x = cx;
+      p3.y = cy - bbox.height/2 - edgeV;
     } else {
       let rect = ReactDOM.findDOMNode(this.refs.shape);
       let margin = 5;
