@@ -143,7 +143,7 @@ export function getBetterPoint(state, node) {
   }
 }
 
-export function moveNode(state, x, y, node, notConnect) {
+export function moveNode(state, x, y, node) {
   let dx = x - state.cursorState.x;
   let dy = y - state.cursorState.y;
   dx *= state.viewArea.scale;
@@ -155,46 +155,46 @@ export function moveNode(state, x, y, node, notConnect) {
     y : node.y + dy,
   });
 
-  if (!notConnect) {
-    for (let k in state.nodeMap) {
-      let other = state.nodeMap[k];
-      // 自分と子供は除外
-      if (other !== node && other.parentId !== node.id) {
-        let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
-        if (d2 / state.viewArea.scale < 1000) {
-          nextNode.parentId = other.id;
-          break;
-        }
-      }
-    }
-  }
+  // if (!notConnect) {
+  //   for (let k in state.nodeMap) {
+  //     let other = state.nodeMap[k];
+  //     // 自分と子供は除外
+  //     if (other !== node && other.parentId !== node.id) {
+  //       let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
+  //       if (d2 / state.viewArea.scale < 1000) {
+  //         nextNode.parentId = other.id;
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
 
   return nextNode;
 }
 
-export function moveNodeAtPoint(state, x, y, node, notConnect) {
+export function moveNodeAtPoint(state, x, y, node) {
   let fP = v2f(state.viewArea, {x:x,y:y});
   
   // node移動
   let nextNode = Object.assign({}, node, fP);
 
-  if (!notConnect) {
-    for (let k in state.nodeMap) {
-      let other = state.nodeMap[k];
-      // 自分と子供は除外
-      if (other !== node && other.parentId !== node.id) {
-        let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
-        if (d2 / state.viewArea.scale < 1000) {
-          // さらに子孫も除外する
-          let ancestorMap = getAncestorMap(state.nodeMap, other.id, true);
-          if (!ancestorMap[nextNode.id]) {
-            nextNode.parentId = other.id;
-          }
-          break;
-        }
-      }
-    }
-  }
+  // if (!notConnect) {
+  //   for (let k in state.nodeMap) {
+  //     let other = state.nodeMap[k];
+  //     // 自分と子供は除外
+  //     if (other !== node && other.parentId !== node.id) {
+  //       let d2 = Math.pow(nextNode.x - other.x, 2) + Math.pow(nextNode.y - other.y, 2);
+  //       if (d2 / state.viewArea.scale < 1000) {
+  //         // さらに子孫も除外する
+  //         let ancestorMap = getAncestorMap(state.nodeMap, other.id, true);
+  //         if (!ancestorMap[nextNode.id]) {
+  //           nextNode.parentId = other.id;
+  //         }
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
 
   return nextNode;
 }

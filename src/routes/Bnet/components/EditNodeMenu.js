@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import TextField from 'material-ui/TextField'
 import IconButton from 'material-ui/IconButton'
 import ActionHome from 'material-ui/svg-icons/action/home'
+import ActionSupervisorAccount from 'material-ui/svg-icons/action/supervisor-account'
 import ContentCreate from 'material-ui/svg-icons/content/create'
 import ContentAddBox from 'material-ui/svg-icons/content/add-box'
 import ContentDeleteSweep from 'material-ui/svg-icons/content/delete-sweep'
@@ -77,10 +78,10 @@ class EditNodeMenu extends React.Component {
         <HardwareDeviceHub color={fullWhite} />
       </IconButton>
     );
-    // 親がいるなら切断ボタンを表示
-    let cutButton = !props.hasParent ? "" : (
+    // 親切り替えボタン
+    let cutButton = (
       <IconButton tooltip="" onTouchTap={props.cutParent} style={buttonStyle} iconStyle={iconStyle}>
-        <ContentContentCut color={fullWhite} />
+        <ActionSupervisorAccount color={fullWhite} />
       </IconButton>
     );
     // ノード削除ボタン

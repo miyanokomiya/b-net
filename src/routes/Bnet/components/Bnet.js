@@ -23,6 +23,7 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import MenuItem from 'material-ui/MenuItem';
 import IconMenu from 'material-ui/IconMenu';
 import EditNodeMenu from './EditNodeMenu';
+import Snackbar from 'material-ui/Snackbar';
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -30,7 +31,13 @@ class Bnet extends React.Component {
     height: PropTypes.number.isRequired,
   }
 
+  state = {
+    openSnackBar : false,
+    snackBarMessage : "",
+  }
+
   componentDidUpdate () {
+    // メニュー位置を調整する
     let menu = ReactDOM.findDOMNode(this.refs.menu);
     if (menu) {
       let rect = menu.getBoundingClientRect();
@@ -76,8 +83,24 @@ class Bnet extends React.Component {
     svgBox.style.height = window.innerHeight - 80 + "px";
   }
 
+  openSnackBar (message) {
+    this.setState({
+      openSnackBar: true,
+      snackBarMessage : message,
+    });
+  }
+
+  closeSnackBar () {
+    this.setState({
+      openSnackBar: false,
+    });
+  };
+
   render () {
     let props = this.props;
+    let closeSnackBar = () => {
+      this.closeSnackBar();
+    };
 
     let $input = "";
 
@@ -112,6 +135,8 @@ class Bnet extends React.Component {
           </IconButton>
         </form>
       );
+    } else if (props.state === 4) {
+      // 親ノード選択中
     } else if (props.target && !props.cursorState.drag) {
 
       let node = props.nodeMap[props.target];
@@ -119,18 +144,24 @@ class Bnet extends React.Component {
         // 子孫持ちかを調べる
         let descentMap = getDescentMap(props.nodeMap, node.id);
 
+        let cutParent = (e) => {
+          // スナックバー表示
+          this.openSnackBar("Select parent node, without the family.");
+          props.cutParent(e);
+        };
+
         $input = (
           <EditNodeMenu ref="menu"
             hasDescent={Object.keys(descentMap).length > 0}
-            hasParent={node.parentId !== null}
+            hasParent={node.parentId}
             nodeShape={node.shape}
             addNode={props.addNode}
             readyChangeText={props.readyChangeText}
             completeChangeShape={props.completeChangeShape}
             selectFamily={props.selectFamily}
-            cutParent={props.cutParent}
+            cutParent={cutParent}
             removeNode={props.removeNode}
-             />
+          />
         )
       }
     }
@@ -186,16 +217,18 @@ class Bnet extends React.Component {
 
               let list = [];
               let lineList = [];
+              let lineHelper = "";
               for (let k in props.nodeMap) {
                 let node = props.nodeMap[k];
                 let size = sizeMap[node.id] || 0;
                 let family = (k in props.targetFamily);
+                let isTarget = node.id === props.target;
                 list.push(
                   <Node key={node.id}
                     id={node.id}
                     text={node.text}
                     x={node.x} y={node.y}
-                    target={node.id === props.target}
+                    target={isTarget}
                     state={node.state}
                     shape={node.shape}
                     readyChangeText={props.readyChangeText}
@@ -224,6 +257,13 @@ class Bnet extends React.Component {
             })()
           }
         </svg>
+
+        <Snackbar
+          open={this.state.openSnackBar}
+          message={this.state.snackBarMessage}
+          autoHideDuration={4000}
+          onRequestClose={closeSnackBar}
+        />
         
         {$input}
         {dialog}

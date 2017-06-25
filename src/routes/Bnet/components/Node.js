@@ -63,7 +63,6 @@ class Node extends React.Component {
 
   render () {
     let props = this.props;
-    let width = props.text.length * 20;
     let height = 30 + props.refSize * 7;
     let className = "node ";
     if (props.target) {
@@ -76,11 +75,11 @@ class Node extends React.Component {
     let shape = "";
     if (props.shape === 1) {
       shape = (
-        <ellipse className="shape" ref="shape" rx={width/2} ry={height/2} cx={props.x + width / 2} cy={props.y + height * 4 / 5} />
+        <ellipse className="shape" ref="shape" rx={5} ry={5} cx={5} cy={5} />
       );
     } else if (props.shape === 2) {
       shape = (
-        <circle className="shape" ref="shape" x={Math.max(width/2, height/2)} cx={props.x + width / 2} cy={props.y + height * 4 / 5} />
+        <circle className="shape" ref="shape" r={5} cx={5} cy={5} />
       );
     } else if (props.shape === 3) {
       shape = (
@@ -88,7 +87,7 @@ class Node extends React.Component {
       );
     } else {
       shape = (
-        <rect className="shape" ref="shape" width={width} height={height} x={props.x - width / 2} y={props.y - height * 4 / 5} />
+        <rect className="shape" ref="shape" width={5} height={5} x={5} y={5} />
       );
     }
 

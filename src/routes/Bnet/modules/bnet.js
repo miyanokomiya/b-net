@@ -10,7 +10,7 @@ export const BNET_RECEIVE_ROOM = 'BNET_RECEIVE_ROOM'
 export const BNET_RECEIVE_DATA = 'BNET_RECEIVE_DATA'
 
 export const BNET_READY_CHANGE_TEXT = 'BNET_READY_CHANGE_TEXT'
-export const BNET_COMPLETE_CHANGE_TEXT = 'BNET_COMPLETE_CHANGE_TEXT'
+export const BNET_CHANGE_STATE = 'BNET_CHANGE_STATE'
 
 export const BNET_ADD_NODE = 'BNET_ADD_NODE'
 export const BNET_SELECT_AND_READY_CHANGE_TEXT = 'BNET_ABNET_SELECT_AND_READY_CHANGE_TEXTDD_NODE_AND_EDIT'
@@ -30,6 +30,7 @@ export const BNET_NOT_AUTH = 'BNET_NOT_AUTH'
 export const BNET_CLEAR = 'BNET_CLEAR'
 
 export const BNET_SELECT_FAMILY = 'BNET_SELECT_FAMILY'
+export const BNET_READY_SELECT_PARENT = 'BNET_READY_SELECT_PARENT'
 
 const DEFAULT_ROOM = 'bnet-default'
 
@@ -153,7 +154,7 @@ export function completeChangeText (value = "") {
       ref.update(nextNode)
       .then(() => {
         return dispatch({
-          type    : BNET_COMPLETE_CHANGE_TEXT,
+          type    : BNET_CHANGE_STATE,
           payload : 0
         });
       })
@@ -210,6 +211,11 @@ export function cutParent (value) {
         });
       });
     }
+
+    return dispatch({
+      type: BNET_READY_SELECT_PARENT,
+      payload: null,
+    });
   }
 }
 
@@ -286,9 +292,38 @@ export function saveNode (value) {
 }
 
 export function selectNode (value) {
-  return {
-    type    : BNET_SELECT_NODE,
-    payload : value
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+    let node = state.nodeMap[state.target];
+    let nextParent = state.nodeMap[value];
+    if (node && nextParent && state.state === 4) {
+      // 親ノードへの参照を更新する
+
+      // 自分と子孫を親にはできない
+      let descentMap = getDescentMap(state.nodeMap, node.id, true);
+      if (!(value in descentMap)) {
+        let nextNode = Object.assign({}, node, {parentId : value});
+        let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+        ref.update(nextNode)
+        .catch(error => {
+          console.log(error);
+          return dispatch({
+            type: 'SAVE_NODE_ERROR',
+            message: error.message,
+          });
+        });
+      }
+
+      return dispatch({
+        type    : BNET_CHANGE_STATE,
+        payload : 0
+      });
+    } else {
+      return dispatch({
+        type: BNET_SELECT_NODE,
+        payload: value,
+      });
+    }
   }
 }
 
@@ -333,10 +368,10 @@ let cursorMoveCommitExec = () => {
 export function cursorMove (value) {
   return (dispatch, getState) => {
     let state = getState().bnet;
-    if (state.cursorState.drag && value.buttons > 0) {
+    if (state.state === 0 && state.cursorState.drag && value.buttons > 0) {
       // 操作対象ノードを探す
       let node = state.nodeMap[state.target];
-      if (node) {
+      if (node && state.cursorState.targetDrag) {
         // ノードを移動
         let nextNode = moveNodeAtPoint(state, value.x, value.y, node);
         let dx = nextNode.x - node.x;
@@ -387,7 +422,7 @@ export function cursorMove (value) {
           cursorMoveCommitTimer = setTimeout(() => {
             cursorMoveCommitExec();
             // 要素数に応じてインターバルを増やす
-          }, 30 + Math.min((count - 1) * 50, 970));
+          }, 50 + Math.min((count - 1) * 50, 950));
         }
         
         return dispatch({
@@ -395,6 +430,7 @@ export function cursorMove (value) {
           payload : value
         });
       } else {
+        // ビューを移動
         return dispatch({
           type: BNET_MOVE_VIEW,
           payload: value,
@@ -524,11 +560,13 @@ const ACTION_HANDLERS = {
         state : 1,
       });
   },
-  [BNET_COMPLETE_CHANGE_TEXT] : (state, action) => {
+  [BNET_CHANGE_STATE] : (state, action) => {
     return Object.assign({}, 
       state, 
       {
         state : action.payload,
+        target : null,
+        targetFamily : {},
       });
   },
   [BNET_CHANGE_NODE] : (state, action) => {
@@ -604,8 +642,11 @@ const ACTION_HANDLERS = {
     return Object.assign({}, 
       state, 
       {
-        target : newTarget ? null : state.target,
-        targetFamily : newTarget ? {} : state.targetFamily,
+        cursorState : Object.assign({}, state.cursorState,
+        {
+          drag : !newTarget,
+          targetDrag : !newTarget,
+        }),
       });
   },
   [BNET_CURSOR_DOWN] : (state, action) => {
@@ -625,14 +666,8 @@ const ACTION_HANDLERS = {
         s = 0;
       }
     } else {
-      if (timeDiff < 500 && state.target) {
-        let node = state.nodeMap[state.target];
-        if (node) {
-          s = 3;
-        }
-      }
-      if (s === 2) {
-        s = 0;
+      if (state.state === 4) {
+        s = 4;
       }
     }
     return Object.assign({}, 
@@ -664,6 +699,7 @@ const ACTION_HANDLERS = {
         cursorState : Object.assign({}, state.cursorState,
         {
           drag : false,
+          targetDrag : false,
         }),
       });
   },
@@ -749,6 +785,13 @@ const ACTION_HANDLERS = {
         targetFamily : targetFamily,
       });
   },
+  [BNET_READY_SELECT_PARENT] : (state, action) => {
+    return Object.assign({},
+      state, 
+      {
+        state : 4,
+      });
+  },
 }
 
 // ------------------------------------
@@ -781,8 +824,11 @@ const initialState = {
   cursorState : {
     x : 0,
     y : 0,
-    delta : 1,
+    // ドラッグ中フラグ
     drag : false,
+    // target内からドラッグを開始したフラグ
+    targetDrag : false,
+    // 最新のピンチ距離
     pinchDistance : 0,
   },
 }

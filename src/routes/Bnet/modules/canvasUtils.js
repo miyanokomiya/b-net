@@ -14,7 +14,7 @@ export function f2v(viewArea, p) {
 }
 
 export function wheelCanvas(state, deltaX, p) {
-    let delta = deltaX < 0 ? 2 : -2;
+    let delta = deltaX < 0 ? 1.8 : -1.8;
     let scale = state.viewArea.scale / Math.pow(1.03, delta);
     scale = Math.max(scale, 0.1);
     scale = Math.min(scale, 10);
