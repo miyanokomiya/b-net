@@ -2,14 +2,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import FlatButton from 'material-ui/FlatButton';
-import IconButton from 'material-ui/IconButton'
-import ContentAddBox from 'material-ui/svg-icons/content/add-box'
-import ContentCreate from 'material-ui/svg-icons/content/create'
-import ContentDeleteSweep from 'material-ui/svg-icons/content/delete-sweep'
 import Dialog from 'material-ui/Dialog'
 import TextField from 'material-ui/TextField'
 
-class RoomAddDialog extends React.Component {
+class RoomEditDialog extends React.Component {
   static propTypes = {
   }
 
@@ -26,18 +22,22 @@ class RoomAddDialog extends React.Component {
   render () {
     let props = this.props;
 
-    let submit = () => {
-        this.props.submit({
+    let submit = (e) => {
+      e.preventDefault();
+      let data = {
         name : this.refs.roomNameInput.input.value,
         password : this.refs.roomPasswordInput.input.value,
         hint : this.refs.roomHintInput.input.value,
-      });
+      };
+
+      props.editComplete(data);
     };
 
     const actions = [
       <FlatButton
-        label="Create"
+        label="Submit"
         primary={true}
+        keyboardFocused={true}
         onTouchTap={submit}
       />,
       <FlatButton
@@ -50,17 +50,18 @@ class RoomAddDialog extends React.Component {
     return (
       <div>
         <Dialog
-          title="New Room"
+          title="Edit Room"
           actions={actions}
           modal={false}
           open={true}
-          onRequestClose={props.cancel}
-        >
+          onRequestClose={this.handleClose} >
           <form onSubmit={submit}>
             <TextField
+              hintText="Input your room's name."
               floatingLabelText="Name"
               floatingLabelFixed={true}
               ref="roomNameInput"
+              defaultValue={props.name}
             />
             <br/>
             <TextField
@@ -69,6 +70,7 @@ class RoomAddDialog extends React.Component {
               floatingLabelFixed={true}
               type="password"
               ref="roomPasswordInput"
+              defaultValue={props.password}
             />
             <br/>
             <TextField
@@ -76,6 +78,7 @@ class RoomAddDialog extends React.Component {
               floatingLabelText="Hint of password"
               floatingLabelFixed={true}
               ref="roomHintInput"
+              defaultValue={props.hint}
             />
             <FlatButton
               type="submit"
@@ -90,4 +93,4 @@ class RoomAddDialog extends React.Component {
   }
 }
 
-export default RoomAddDialog
+export default RoomEditDialog

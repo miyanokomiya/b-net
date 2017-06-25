@@ -10,6 +10,7 @@ import TextField from 'material-ui/TextField'
 import IconButton from 'material-ui/IconButton'
 import ContentCreate from 'material-ui/svg-icons/content/create'
 import RoomAddDialog from './RoomAddDialog'
+import RoomEditDialog from './RoomEditDialog'
 import {fullWhite} from 'material-ui/styles/colors';
 
 class Room extends React.Component {
@@ -19,6 +20,7 @@ class Room extends React.Component {
   state = {
     open: false,
     openAddDialog: false,
+    editRoomId : null,
   };
 
   componentDidUpdate () {
@@ -32,13 +34,12 @@ class Room extends React.Component {
     this.props.loadTodos();
   }
 
-  handleOpen = (key) => {
-    let room = this.props.roomMap[key];
-    this.setState({open: true, key: key, room: room});
+  openEditDialog = (key) => {
+    this.setState({open: true, editRoomId: key});
   };
 
-  handleClose = () => {
-    this.setState({open: false});
+  closeEditDialog = () => {
+    this.setState({editRoomId: null});
   };
 
   openAddDialog = () => {
@@ -54,49 +55,30 @@ class Room extends React.Component {
     this.props.addRoom(data);
   };
 
-  editComplete = () => {
-    let data = {
-      name : this.refs.roomNameInput.input.value
-    };
-
-    this.props.editComplete(this.state.key, data);
-    this.handleClose();
+  editComplete = (data) => {
+    this.props.editComplete(this.state.editRoomId, data);
+    this.closeEditDialog();
   };
 
   render () {
     let props = this.props;
-    const actions = [
-      <FlatButton
-        label="Submit"
-        primary={true}
-        keyboardFocused={true}
-        onTouchTap={this.editComplete}
-      />,
-      <FlatButton
-        label="Cancel"
-        primary={true}
-        onTouchTap={this.handleClose}
-      />,
-    ];
+    let openEditDialog = this.openEditDialog;
 
-    let handleOpen = this.handleOpen;
-
-    let dialog = !this.state.open ? "" : (
-      <Dialog
-        title="Edit Room"
-        actions={actions}
-        modal={false}
-        open={true}
-        onRequestClose={this.handleClose} >
-        <TextField
-          hintText="Input your room's name."
-          floatingLabelText="Name"
-          floatingLabelFixed={true}
-          ref="roomNameInput"
-          defaultValue={this.state.room.name}
-        />
-      </Dialog>
-    );
+    let editDialog = "";
+    if (this.state.editRoomId) {
+      let editRoomId = this.state.editRoomId;
+      let room = this.props.roomMap[editRoomId];
+      editDialog = (
+        <RoomEditDialog
+          roomId={editRoomId}
+          name={room.name}
+          password={props.passwordMap[editRoomId]}
+          hint={room.hint}
+          editComplete={this.editComplete}
+          cancel={this.closeEditDialog} />
+      );
+    }
+    
 
     let roomAddDialog = !this.state.openAddDialog ? "" : (
       <RoomAddDialog submit={this.submitAddDialog} cancel={this.closeAddDialog} />
@@ -162,14 +144,18 @@ class Room extends React.Component {
                 id={k}
                 created={room.created}
                 name={room.name}
-                readyEditRoom={handleOpen}
-                deleteRoom={confirmDeleteRoom} />
+                hint={room.hint}
+                notAuth={!(k in props.passwordMap)}
+                readyEditRoom={openEditDialog}
+                deleteRoom={confirmDeleteRoom}
+                loadPassword={props.loadPassword}
+                postPassword={props.postPassword} />
             )
           }
           return list.reverse();
         })()}
 
-        {dialog}
+        {editDialog}
         {roomAddDialog}
         {confirmDeleteDialog}
       </div>

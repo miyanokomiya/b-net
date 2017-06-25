@@ -18,6 +18,8 @@ const mapDispatchToProps = {
   addRoom : (data) => actions.addRoom(data),
   editComplete : (key, data) => actions.editRoom(key, data),
   deleteRoom : (key) => actions.deleteRoom(key),
+  loadPassword : (roomId) => actions.loadPassword(roomId),
+  postPassword : (roomId, password) => actions.postPassword(roomId, password),
 }
 
 const mapStateToProps = (state) => state.room

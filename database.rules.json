@@ -14,7 +14,7 @@
     },
     "roomkey" : {
       "$room_id" : {
-        ".read": "false",
+        ".read": "!root.child('roomkey/'+$room_id).exists() || !root.child('roomkey/'+$room_id).exists() || root.child('user/'+ auth.uid +'/room/'+$room_id).val() === root.child('roomkey/'+$room_id).val()",
         ".write": "!root.child('roomkey/'+$room_id).exists() || !root.child('roomkey/'+$room_id).exists() || root.child('user/'+ auth.uid +'/room/'+$room_id).val() === root.child('roomkey/'+$room_id).val()"
       }
     },

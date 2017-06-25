@@ -9,6 +9,7 @@ import ContentAddBox from 'material-ui/svg-icons/content/add-box'
 import ContentCreate from 'material-ui/svg-icons/content/create'
 import ContentDeleteSweep from 'material-ui/svg-icons/content/delete-sweep'
 import ImageNavigateNext from 'material-ui/svg-icons/image/navigate-next'
+import TextField from 'material-ui/TextField'
 
 class RoomCard extends React.Component {
   static propTypes = {
@@ -34,27 +35,67 @@ class RoomCard extends React.Component {
     }
 
     let titleLink = (
-      <Link to={`/bnet?room-id=${props.id}`}>
+      <Link ref="link" to={`/bnet?room-id=${props.id}`}>
+        <div>
         {props.name || "No Name"}
+        </div>
       </Link>
     );
 
+    let onExpandChange = (newExpandedState) => {
+      if (newExpandedState) {
+        props.loadPassword(props.id)
+      }
+    };
+
+    let postPassword = (e) => {
+      e.preventDefault();
+      let pass = this.refs.password.input.value;
+      props.postPassword(props.id, pass);
+    };
+
+    let content = "";
+    if (props.notAuth) {
+      content = (
+        <form onSubmit={postPassword}>
+          <TextField
+            hintText={"Hint: " + props.hint}
+            floatingLabelText="Password"
+            floatingLabelFixed={true}
+            type="password"
+            ref="password"
+          />
+          <FlatButton
+            label="Submit"
+            primary={true}
+            type="submit"
+          />
+        </form>
+      );
+    } else {
+      content = (
+        <div>
+          <IconButton tooltip="Edit" onTouchTap={readyEditRoom}>
+            <ContentCreate />
+          </IconButton>
+          <IconButton tooltip="Delete" onTouchTap={deleteRoom}>
+            <ContentDeleteSweep />
+          </IconButton>
+        </div>
+      );
+    }
+
     return (
       <div>
-        <Card>
+        <Card onExpandChange={onExpandChange} >
           <CardHeader
             title={titleLink}
             subtitle={`Created: ${date.toLocaleString()}`}
-            actAsExpander={true}
+            actAsExpander={false}
             showExpandableButton={true}
           />
           <CardText expandable={true}>
-            <IconButton tooltip="Edit" onTouchTap={readyEditRoom}>
-              <ContentCreate />
-            </IconButton>
-            <IconButton tooltip="Delete" onTouchTap={deleteRoom}>
-              <ContentDeleteSweep />
-            </IconButton>
+            {content}
           </CardText>
         </Card>
       </div>

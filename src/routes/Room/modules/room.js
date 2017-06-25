@@ -8,6 +8,8 @@ export const ROOM_LOAD_ROOM_SUCCESS = 'ROOM_LOAD_ROOM_SUCCESS'
 export const ROOM_ADD_ROOM_SUCCESS = 'ROOM_ADD_ROOM_SUCCESS'
 export const ROOM_EDIT_ROOM_SUCCESS = 'ROOM_EDIT_ROOM_SUCCESS'
 export const ROOM_REMOVE_ROOM_SUCCESS = 'ROOM_REMOVE_ROOM_SUCCESS'
+export const ROOM_GET_PASSWORD_SUCCESS = 'ROOM_GET_PASSWORD_SUCCESS'
+export const ROOM_NOT_AUTH = 'ROOM_NOT_AUTH'
 
 // ------------------------------------
 // Actions
@@ -17,7 +19,7 @@ export function loadTodos() {
   return dispatch => {
     ref.off();
     // valueを購読する。変更があれば、以下の処理が実行される。
-    ref.on('value',
+    ref.once('value',
       (snapshot) => {
         ref.off('value');
         dispatch(loadRoomListSuccess(snapshot));
@@ -37,15 +39,14 @@ export function loadTodos() {
             dispatch(loadTodosError(error));
           }
         );
-      },
-      (error) => {
-        // ref.off('value');
-        dispatch(loadTodosError(error));
-      }
-    );
-    ref.on('child_removed',
-      (snapshot) => {
-        dispatch(removeRoomSuccess(snapshot));
+        ref.on('child_removed',
+          (snapshot) => {
+            dispatch(removeRoomSuccess(snapshot));
+          },
+          (error) => {
+            dispatch(loadTodosError(error));
+          }
+        );
       },
       (error) => {
         dispatch(loadTodosError(error));
@@ -104,14 +105,46 @@ function addRoomSuccess(value) {
 
 function editRoom(key, data) {
   return (dispatch, getState) => {
-    let room = data;
-    firebaseDb.ref(`room/${key}`).update(room)
-    .catch(error => {
-      console.log(error);
+    // ルームのパスワードはルームデータから隔離して保存
+    let room = assignRoom({
+      name : data.name,
+      hint : data.hint,
+    });
+    var updates = {};
+    updates['/room/' + key] = room;
+    let password = null;
+    if (data.password) {
+      password = data.password;
+    }
+
+    updates['/roomkey/' + key] = password;
+    let user = firebaseAuth.currentUser;
+    updates['/user/' + user.uid + '/room/' + key] = password;
+
+    firebaseDb.ref().update(updates)
+    .then(() => {
+      // ローカルのパスワード更新
       return dispatch({
-        type: 'SAVE_NODE_ERROR',
-        payload: error.message,
+        type: ROOM_GET_PASSWORD_SUCCESS,
+        payload: {
+          roomId : key,
+          password : data.password,
+        },
       });
+    })
+    .catch(error => {
+      if (error.code === 'PERMISSION_DENIED') {
+        // 認証されていない
+        return dispatch({
+          type: ROOM_NOT_AUTH,
+          payload: key
+        });
+      } else {
+        return dispatch({
+          type: 'TODOS_RECIVE_ERROR',
+          message: error.message
+        });
+      }
     });
   }
 }
@@ -133,11 +166,18 @@ function deleteRoom(key) {
     updates['/user/' + user.uid + '/room/' + key] = null;
     firebaseDb.ref().update(updates)
     .catch(error => {
-      console.log(error);
-      return dispatch({
-        type: 'SAVE_NODE_ERROR',
-        payload: error.message,
-      });
+      if (error.code === 'PERMISSION_DENIED') {
+        // 認証されていない
+        return dispatch({
+          type: ROOM_NOT_AUTH,
+          payload: key
+        });
+      } else {
+        return dispatch({
+          type: 'TODOS_RECIVE_ERROR',
+          message: error.message
+        });
+      }
     });
   }
 }
@@ -149,11 +189,61 @@ function removeRoomSuccess(value) {
   }
 }
 
+function loadPassword(roomId) {
+  return (dispatch, getState) => {
+    // 部屋パスワードを取得する
+    firebaseDb.ref(`roomkey/${roomId}`).once('value',
+      (snapshot) => {
+        // 認証済みあれば成功する
+        return dispatch({
+          type: ROOM_GET_PASSWORD_SUCCESS,
+          payload: {
+            roomId : snapshot.key,
+            password : snapshot.val(),
+          },
+        });
+      },
+      (error) => {
+        if (error.code === 'PERMISSION_DENIED') {
+          // 認証されていない
+          return dispatch({
+            type: ROOM_NOT_AUTH,
+            payload: roomId
+          });
+        } else {
+          return dispatch({
+            type: 'TODOS_RECIVE_ERROR',
+            message: error.message
+          });
+        }
+      }
+    );
+  }
+}
+
+function postPassword (roomId, value) {
+  return (dispatch, getState) => {
+    let user = firebaseAuth.currentUser;
+    let update = {};
+    update[roomId] = value;
+    let ref = firebaseDb.ref(`user/${user.uid}/room`);
+    ref.update(update)
+    .then(() => {
+      // 認証成功したか試す
+      dispatch(loadPassword(roomId));
+    })
+    .catch(error => {
+    });
+  }
+}
+
 export const actions = {
   loadTodos,
   addRoom,
   editRoom,
   deleteRoom,
+  loadPassword,
+  postPassword,
 }
 
 // ------------------------------------
@@ -185,7 +275,7 @@ const ACTION_HANDLERS = {
     let nextRoomMap = Object.assign({}, state.roomMap);
     nextRoomMap[data.key] = room;
 
-    return Object.assign({}, 
+    return Object.assign({},
       state, 
       {
         roomMap : nextRoomMap,
@@ -193,30 +283,57 @@ const ACTION_HANDLERS = {
   },
   [ROOM_EDIT_ROOM_SUCCESS] : (state, action) => {
     let nextRoomMap = Object.assign({}, state.roomMap);
-    nextRoomMap[action.payload.key] = action.payload.val();
-    return Object.assign({}, 
+    let room = state.roomMap[action.payload.key];
+    nextRoomMap[action.payload.key] = Object.assign({}, room, action.payload.val());
+    return Object.assign({},
       state, 
       {
         roomMap : nextRoomMap,
       });
   },
   [ROOM_REMOVE_ROOM_SUCCESS] : (state, action) => {
+    let key = action.payload.key;
     let nextRoomMap = Object.assign({}, state.roomMap);
-    delete nextRoomMap[action.payload.key];
+    delete nextRoomMap[key];
 
-    return Object.assign({}, 
-      state, 
-      {
-        roomMap : nextRoomMap,
-      });
+    // 認証情報削除
+    let nextPasswordMap = Object.assign({}, state.passwordMap);
+    delete nextPasswordMap[key];
+
+    return Object.assign({}, state, {
+      roomMap : nextRoomMap,
+      passwordMap : nextPasswordMap
+    });
+  },
+  [ROOM_GET_PASSWORD_SUCCESS] : (state, action) => {
+    let key = action.payload.roomId;
+    let val = action.payload.password;
+    // 認証情報保存
+    let nextPasswordMap = Object.assign({}, state.passwordMap);
+    nextPasswordMap[key] = val;
+
+    return Object.assign({}, state, {
+      passwordMap : nextPasswordMap
+    });
+  },
+  [ROOM_NOT_AUTH] : (state, action) => {
+    let key = action.payload;
+    // 認証情報削除
+    let nextPasswordMap = Object.assign({}, state.passwordMap);
+    delete nextPasswordMap[key];
+
+    return Object.assign({}, state, {
+      passwordMap : nextPasswordMap
+    });
   },
 }
 
 function createRoom() {
   return {
     created : TIMESTAMP,
-    id : "",
-    name : "bnet"
+    name : "bnet",
+    hint : "",
+    notAuth : true,
   };
 }
 
@@ -230,6 +347,7 @@ function assignRoom(room) {
 // ------------------------------------
 const initialState = {
   roomMap : {},
+  passwordMap : {},
 }
 
 export default function roomReducer (state = initialState, action) {
