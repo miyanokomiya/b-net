@@ -83,12 +83,12 @@ const mapDispatchToProps = {
   cursorDown : (e) => {
     e.preventDefault();
     let p = getPoint(e);
-    let g = e.target.closest("g");
+    // let g = e.target.closest("g");
     return actions.cursorDown({
       x : p.x,
       y : p.y,
       onField : e.currentTarget === e.target,
-      target : g ? g.getAttribute("data-id") : null,
+      // target : g ? g.getAttribute("data-id") : null,
       time : Date.now(),
       isMulitTouch : isMulitTouch(e),
     });
