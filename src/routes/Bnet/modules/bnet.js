@@ -651,7 +651,12 @@ const ACTION_HANDLERS = {
   },
   [BNET_CURSOR_DOWN] : (state, action) => {
     if (action.payload.isMulitTouch) {
-      return state;
+      // ピンチ距離リセット
+      return Object.assign({}, state, {
+        cursorState : Object.assign({}, state.cursorState, {
+          pinchDistance : 0,
+        }),
+      });
     }
 
     let s = 0;
