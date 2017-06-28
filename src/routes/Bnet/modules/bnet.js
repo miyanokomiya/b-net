@@ -221,25 +221,29 @@ export function cutParent (value) {
 
 export function addNode () {
   return (dispatch, getState) => {
-    let node = createNewNode(getState().bnet, true);
-    var newPostKey = firebaseDb.ref().child('posts').push().key;
-    node.id = newPostKey;
-    node.created = TIMESTAMP;
-    let state = getState().bnet;
-    let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-    ref.update(node)
-    .then(() => dispatch({
-      type    : BNET_SELECT_AND_READY_CHANGE_TEXT,
-      payload : node.id
-    }))
-    .catch(error => {
-      console.log(error);
-      return dispatch({
-        type: 'SAVE_NODE_ERROR',
-        payload: error.message,
-      });
-    });
+    _addNode(dispatch, getState);
   }
+}
+
+function _addNode(dispatch, getState) {
+  let node = createNewNode(getState().bnet, true);
+  var newPostKey = firebaseDb.ref().child('posts').push().key;
+  node.id = newPostKey;
+  node.created = TIMESTAMP;
+  let state = getState().bnet;
+  let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+  ref.update(node)
+  .then(() => dispatch({
+    type    : BNET_SELECT_AND_READY_CHANGE_TEXT,
+    payload : node.id
+  }))
+  .catch(error => {
+    console.log(error);
+    return dispatch({
+      type: 'SAVE_NODE_ERROR',
+      payload: error.message,
+    });
+  });
 }
 
 function addNodeSuccess(snapshot){
@@ -318,7 +322,7 @@ export function selectNode (value) {
         type    : BNET_CHANGE_STATE,
         payload : 0
       });
-    } else {
+    } else if (state.cursorState.drag) {
       return dispatch({
         type: BNET_SELECT_NODE,
         payload: value,
@@ -335,9 +339,23 @@ export function cursorDownNode (value) {
 }
 
 export function cursorDown (value) {
-  return {
-    type    : BNET_CURSOR_DOWN,
-    payload : value
+  // return {
+  //   type    : BNET_CURSOR_DOWN,
+  //   payload : value
+  // }
+
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+    let timeDiff = value.time - state.cursorState.cursorDownStartTime;
+    // 洲早い２回操作 and フィールド上なら新規ノード作成
+    if (timeDiff < 500 && value.onField) {
+      _addNode(dispatch, getState);
+    } else {
+      return dispatch({
+          type    : BNET_CURSOR_DOWN,
+          payload : value
+      });
+    }
   }
 }
 
@@ -661,15 +679,11 @@ const ACTION_HANDLERS = {
 
     let s = 0;
     let target = state.target;
-    let timeDiff = action.payload.time - state.lastDownTime;
+    let timeDiff = action.payload.time - state.cursorDownStartTime;
     let viewArea = state.viewArea;
     if (action.payload.onField) {
       target = null;
-      if (timeDiff < 500) {
-        s = 2;
-      } else {
-        s = 0;
-      }
+      s = 0;
     } else {
       if (state.state === 4) {
         s = 4;
@@ -684,6 +698,7 @@ const ACTION_HANDLERS = {
           y : action.payload.y,
           drag : true,
           pinchDistance : 0,
+          cursorDownStartTime : action.payload.time,
         }),
         menuPoint : Object.assign({}, state.menuPoint,
         {
@@ -691,7 +706,6 @@ const ACTION_HANDLERS = {
           y : action.payload.y,
         }),
         state : s,
-        lastDownTime : action.payload.time,
         target : target,
         targetFamily : state.target === target ? state.targetFamily : {},
         viewArea : viewArea
@@ -820,7 +834,6 @@ const initialState = {
     y : 0
   },
   lastClickTime : 0,
-  lastDownTime : 0,
   viewArea : {
     left : 0,
     top : 0,
@@ -835,6 +848,8 @@ const initialState = {
     targetDrag : false,
     // 最新のピンチ距離
     pinchDistance : 0,
+    // カーソルダウン開始時間
+    cursorDownStartTime : 0,
   },
 }
 
