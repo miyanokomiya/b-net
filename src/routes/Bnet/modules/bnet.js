@@ -342,8 +342,9 @@ export function cursorDown (value) {
   return (dispatch, getState) => {
     let state = getState().bnet;
     let timeDiff = value.time - state.cursorState.cursorDownStartTime;
-    // 洲早い２回操作 and フィールド上なら新規ノード作成
-    if (timeDiff < 500 && value.onField && !state.cursorState.drag) {
+    let d2 = Math.pow(value.x - state.cursorState.x, 2) + Math.pow(value.x - state.cursorState.x, 2);
+    // 洲早い２回操作、ある程度近くを２回 and フィールド上、マルチタッチではないなら新規ノード作成
+    if (timeDiff < 300 && d2 < Math.pow(40, 2) && value.onField && !state.cursorState.drag) {
       _addNode(dispatch, getState);
     } else {
       return dispatch({
