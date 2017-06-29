@@ -55,7 +55,11 @@ export function createNewNode(state) {
   return node;
 }
 
-// 既存位置と重複にしくい良い点を取得する
+/**
+ * 既存位置と重複にしくい良い点を取得する
+ * @param {*} state bnetステイト
+ * @param {*} node ノードオブジェクト
+ */
 export function getBetterPoint(state, node) {
   let parent = state.nodeMap[node.parentId];
   if (parent) {
@@ -74,6 +78,9 @@ export function getBetterPoint(state, node) {
         nodeList.push(n);
       }
     }
+
+    // 兄弟多数なら距離を伸ばす
+    let distance = 300 + 50 * Math.ceil(nodeList.length / 4);
 
     if (nodeList.length > 0) {
       // 重複を避けるノード達と親とのラジアンを取得
@@ -120,8 +127,8 @@ export function getBetterPoint(state, node) {
       });
 
       let rad = dList[0].rad;
-      let dx = 300 * Math.cos(rad);
-      let dy = 300 * Math.sin(rad);
+      let dx = distance * Math.cos(rad);
+      let dy = distance * Math.sin(rad);
 
       return {
         x : parent.x + dx,
@@ -131,7 +138,7 @@ export function getBetterPoint(state, node) {
       // 兄弟はいないので真下にしておく
       return {
         x : parent.x,
-        y : parent.y + 200,
+        y : parent.y + distance,
       }
     }
   } else {
