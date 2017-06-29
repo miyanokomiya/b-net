@@ -15,6 +15,15 @@ export const ROOM_NOT_AUTH = 'ROOM_NOT_AUTH'
 // Actions
 // ------------------------------------
 
+/**
+ * 接続を切る
+ */
+export function disConnect() {
+  return (dispatch, getState) => {
+    ref.off();
+  }
+}
+
 export function loadTodos() {
   return dispatch => {
     ref.off();
@@ -238,6 +247,7 @@ function postPassword (roomId, value) {
 }
 
 export const actions = {
+  disConnect,
   loadTodos,
   addRoom,
   editRoom,

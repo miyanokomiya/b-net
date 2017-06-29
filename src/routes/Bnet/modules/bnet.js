@@ -38,6 +38,18 @@ const DEFAULT_ROOM = 'bnet-default'
 // Actions
 // ------------------------------------
 
+/**
+ * 接続を切る
+ */
+export function disConnect() {
+  return (dispatch, getState) => {
+    let state = getState();
+    if (state.bnet.roomId) {
+      firebaseDb.ref(`nodemap/${state.roomId}`).off();
+    }
+  }
+}
+
 export function loadTodos() {
   return (dispatch, getState) => {
     let state = getState();
@@ -498,6 +510,7 @@ function selectFamily(value){
 }
 
 export const actions = {
+  disConnect,
   loadTodos,
   readyChangeText,
   completeChangeText,

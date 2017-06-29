@@ -14,6 +14,7 @@ import Room from '../components/Room'
 
 
 const mapDispatchToProps = {
+  disConnect : () => actions.disConnect(),
   loadTodos : () => actions.loadTodos(),
   addRoom : (data) => actions.addRoom(data),
   editComplete : (key, data) => actions.editRoom(key, data),

@@ -34,6 +34,10 @@ class Room extends React.Component {
     this.props.loadTodos();
   }
 
+  componentWillUnmount () {
+    this.props.disConnect();
+  }
+
   openEditDialog = (key) => {
     this.setState({open: true, editRoomId: key});
   };

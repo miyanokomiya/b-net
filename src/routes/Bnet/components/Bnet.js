@@ -76,6 +76,7 @@ class Bnet extends React.Component {
   componentWillUnmount () {
     // イベントハンドラ片付け
     window.removeEventListener('resize', this._adjustSvgBox);
+    this.props.disConnect();
   }
 
   adjustSvgBox () {
