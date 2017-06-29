@@ -339,16 +339,11 @@ export function cursorDownNode (value) {
 }
 
 export function cursorDown (value) {
-  // return {
-  //   type    : BNET_CURSOR_DOWN,
-  //   payload : value
-  // }
-
   return (dispatch, getState) => {
     let state = getState().bnet;
     let timeDiff = value.time - state.cursorState.cursorDownStartTime;
     // 洲早い２回操作 and フィールド上なら新規ノード作成
-    if (timeDiff < 500 && value.onField) {
+    if (timeDiff < 500 && value.onField && !state.cursorState.drag) {
       _addNode(dispatch, getState);
     } else {
       return dispatch({
