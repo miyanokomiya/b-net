@@ -13,7 +13,7 @@ svg line {
   fill: none;
   stroke: #09d;
   stroke-width: 4;
-  stroke-dasharray: 190 10;
+  stroke-dasharray: 390 10;
   stroke-dashoffset: 0;
   -webkit-animation: dash 10s linear forwards;
   animation: dash 10s linear forwards;
@@ -25,12 +25,12 @@ svg line.ancestor-line {
 }
 @-webkit-keyframes dash {
   to {
-    stroke-dashoffset: 1000;
+    stroke-dashoffset: 1200;
   }
 }
 @keyframes dash {
   to {
-    stroke-dashoffset: 1000;
+    stroke-dashoffset: 1200;
   }
 }
 svg g.node {
