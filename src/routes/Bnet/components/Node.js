@@ -99,8 +99,8 @@ class Node extends React.Component {
     }
 
     return (
-      <g onMouseUp={props.selectNode}
-        onTouchEnd={props.selectNode}
+      <g onMouseUp={props.cursorUpNode}
+        onTouchEnd={props.cursorUpNode}
         onMouseDown={props.cursorDownNode}
         onTouchStart={props.cursorDownNode}
         data-id={props.id}

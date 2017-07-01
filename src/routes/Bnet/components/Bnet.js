@@ -233,7 +233,7 @@ class Bnet extends React.Component {
                     state={node.state}
                     shape={node.shape}
                     readyChangeText={props.readyChangeText}
-                    selectNode={props.selectNode}
+                    cursorUpNode={props.cursorUpNode}
                     cursorDownNode={props.cursorDownNode}
                     refSize={size}
                     family={family} />

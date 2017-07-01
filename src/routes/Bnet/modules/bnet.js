@@ -34,6 +34,16 @@ export const BNET_READY_SELECT_PARENT = 'BNET_READY_SELECT_PARENT'
 
 const DEFAULT_ROOM = 'bnet-default'
 
+/**
+ * カーソルダウンからアップまでの短いとみなす時間
+ */
+const FAST_TIME_BETWEEN_DOWN_AND_UP = 200;
+
+/**
+ * カーソルダウンからダウンまでの短いとみなす時間
+ */
+const FAST_TIME_BETWEEN_DOWN_AND_DOWN = 300;
+
 // ------------------------------------
 // Actions
 // ------------------------------------
@@ -307,18 +317,29 @@ export function saveNode (value) {
   }
 }
 
-export function selectNode (value) {
+export function cursorUpNode (value) {
   return (dispatch, getState) => {
     let state = getState().bnet;
+
+    if (value.isTouchExist) {
+      return;
+    }
+
+    let timeDiff = value.time - state.cursorState.cursorDownStartTime;
+    if (timeDiff >= FAST_TIME_BETWEEN_DOWN_AND_UP) {
+      return;
+    }
+
     let node = state.nodeMap[state.target];
-    let nextParent = state.nodeMap[value];
+    let targetId = value.target;
+    let nextParent = state.nodeMap[targetId];
     if (node && nextParent && state.state === 4) {
       // 親ノードへの参照を更新する
 
       // 自分と子孫を親にはできない
       let descentMap = getDescentMap(state.nodeMap, node.id, true);
-      if (!(value in descentMap)) {
-        let nextNode = Object.assign({}, node, {parentId : value});
+      if (!(targetId in descentMap)) {
+        let nextNode = Object.assign({}, node, {parentId : targetId});
         let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
         ref.update(nextNode)
         .catch(error => {
@@ -337,16 +358,20 @@ export function selectNode (value) {
     } else if (state.cursorState.drag) {
       return dispatch({
         type: BNET_SELECT_NODE,
-        payload: value,
+        payload: targetId,
       });
     }
   }
 }
 
 export function cursorDownNode (value) {
-  return {
-    type    : BNET_CURSOR_DOWN_NODE,
-    payload : value
+  return (dispatch, getState) => {
+    if (!value.isMulitTouch) {
+      return dispatch({
+        type    : BNET_CURSOR_DOWN_NODE,
+        payload : value.target
+      });
+    }
   }
 }
 
@@ -356,7 +381,7 @@ export function cursorDown (value) {
     let timeDiff = value.time - state.cursorState.cursorDownStartTime;
     let d2 = Math.pow(value.x - state.cursorState.x, 2) + Math.pow(value.x - state.cursorState.x, 2);
     // 洲早い２回操作、ある程度近くを２回 and フィールド上、マルチタッチではないなら新規ノード作成
-    if (timeDiff < 300 && d2 < Math.pow(40, 2) && value.onField && !state.cursorState.drag) {
+    if (timeDiff < FAST_TIME_BETWEEN_DOWN_AND_DOWN && d2 < Math.pow(40, 2) && value.onField && !state.cursorState.drag) {
       _addNode(dispatch, getState);
     } else {
       return dispatch({
@@ -368,12 +393,23 @@ export function cursorDown (value) {
 }
 
 export function cursorUp (value) {
-  // ノード移動を完了させる
-  cursorMoveCommitExec();
-  return {
-    type    : BNET_CURSOR_UP,
-    payload : value
-  }
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+
+    // ノード移動を完了させる
+    cursorMoveCommitExec();
+
+    // カーソルダウンから間をおかずにアップしたかどうかをパラメータに追加
+    let timeDiff = value.time - state.cursorState.cursorDownStartTime;
+
+    return dispatch({
+      type    : BNET_CURSOR_UP,
+      payload : {
+        fastUp : timeDiff < FAST_TIME_BETWEEN_DOWN_AND_UP,
+        onField : value.onField,
+      }
+    });
+  };
 }
 
 // ノード移動における通信量削減のための努力
@@ -518,7 +554,7 @@ export const actions = {
   cutParent,
   addNode,
   removeNode,
-  selectNode,
+  cursorUpNode,
   cursorDownNode,
   cursorDown,
   cursorUp,
@@ -691,7 +727,7 @@ const ACTION_HANDLERS = {
     let timeDiff = action.payload.time - state.cursorDownStartTime;
     let viewArea = state.viewArea;
     if (action.payload.onField) {
-      target = null;
+      // target = null;
       s = 0;
     } else {
       if (state.state === 4) {
@@ -721,6 +757,12 @@ const ACTION_HANDLERS = {
       });
   },
   [BNET_CURSOR_UP] : (state, action) => {
+    // フィールド場でカーソルダウンからアップが素早かった場合は選択解除
+    let target = state.target;
+    if (action.payload.onField && action.payload.fastUp) {
+      target = null;
+    }
+
     return Object.assign({}, 
       state, 
       {
@@ -729,6 +771,7 @@ const ACTION_HANDLERS = {
           drag : false,
           targetDrag : false,
         }),
+        target : target
       });
   },
   [BNET_CURSOR_MOVE] : (state, action) => {

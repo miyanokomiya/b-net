@@ -40,6 +40,10 @@ function isMulitTouch(e) {
   return isTouch(e) && e.touches.length > 1;
 }
 
+function isTouchExist(e) {
+  return isTouch(e) && e.touches.length > 0;
+}
+
 function getPoints(e) {
   let ret = [];
   let rect = e.currentTarget.getBoundingClientRect();
@@ -75,11 +79,18 @@ const mapDispatchToProps = {
   removeNode : (e) => {
     return actions.removeNode();
   },
-  selectNode : (e) => {
-    return actions.selectNode(e.currentTarget.getAttribute("data-id"));
+  cursorUpNode : (e) => {
+    return actions.cursorUpNode({
+      target : e.currentTarget.getAttribute("data-id"),
+      isTouchExist : isTouchExist(e),
+      time : Date.now(),
+    });
   },
   cursorDownNode : (e) => {
-    return actions.cursorDownNode(e.currentTarget.getAttribute("data-id"));
+    return actions.cursorDownNode({
+      target : e.currentTarget.getAttribute("data-id"),
+      isMulitTouch : isMulitTouch(e),
+    });
   },
   cursorDown : (e) => {
     e.preventDefault();
@@ -89,13 +100,15 @@ const mapDispatchToProps = {
       x : p.x,
       y : p.y,
       onField : e.currentTarget === e.target,
-      // target : g ? g.getAttribute("data-id") : null,
       time : Date.now(),
       isMulitTouch : isMulitTouch(e),
     });
   },
   cursorUp : (e) => {
-    return actions.cursorUp();
+    return actions.cursorUp({
+      onField : e.currentTarget === e.target,
+      time : Date.now(),
+    });
   },
   cursorMove : (e) => {
     e.preventDefault();
