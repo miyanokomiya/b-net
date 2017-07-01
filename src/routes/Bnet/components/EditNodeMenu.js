@@ -17,6 +17,7 @@ import ToggleRadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-butto
 import ToggleStarBorder from 'material-ui/svg-icons/toggle/star-border.js'
 import MenuItem from 'material-ui/MenuItem';
 import IconMenu from 'material-ui/IconMenu';
+import ImagePalette from 'material-ui/svg-icons/image/palette'
 
 class EditNodeMenu extends React.Component {
   static propTypes = {
@@ -40,6 +41,11 @@ class EditNodeMenu extends React.Component {
       width: iconSize,
       height: iconSize,
     };
+
+    // 削除は目立たないように
+    let removeButtonStyle = Object.assign({}, buttonStyle, {
+      backgroundColor: "#999"
+    });
     
     // ノード追加ボタン
     let addNodeButton = (
@@ -72,6 +78,25 @@ class EditNodeMenu extends React.Component {
         <MenuItem value={3} primaryText="Diamond" />
       </IconMenu>
     );
+    // 色選択ボタン＆メニュー
+    let selectColorButton = (
+      <IconMenu
+        iconButtonElement={
+          <IconButton tooltip="" style={buttonStyle} iconStyle={iconStyle}>
+            <ImagePalette color={fullWhite} />
+          </IconButton>
+        }
+        anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+        targetOrigin={{horizontal: 'left', vertical: 'top'}}
+        value={props.nodeColor}
+        onChange={props.completeChangeNodeColor}
+      >
+        <MenuItem value={"#ffffff"} primaryText="White" />
+        <MenuItem value={"#32cd32"} primaryText="Green" />
+        <MenuItem value={"#ffd700"} primaryText="Yellow" />
+        <MenuItem value={"#ff6347"} primaryText="Red" />
+      </IconMenu>
+    );
     // 子孫がいるなら子孫一括選択ボタンを表示
     let selectFamilyButton = !props.hasDescent ? "" : (
       <IconButton tooltip="" onTouchTap={props.selectFamily} style={buttonStyle} iconStyle={iconStyle}>
@@ -86,16 +111,17 @@ class EditNodeMenu extends React.Component {
     );
     // ノード削除ボタン
     let removeNodeButton = (
-      <IconButton tooltip="" onTouchTap={props.removeNode} style={buttonStyle} iconStyle={iconStyle}>
+      <IconButton tooltip="" onTouchTap={props.removeNode} style={removeButtonStyle} iconStyle={iconStyle}>
         <ContentDeleteSweep color={fullWhite} />
       </IconButton>
     );
     
     return (
-      <form style={{position : 'absolute'}}>
+      <form style={{position : 'absolute', display : 'flex'}}>
         {addNodeButton}
         {editTextButton}
         {selectShapeButton}
+        {selectColorButton}
         {selectFamilyButton}
         {cutButton}
         {removeNodeButton}

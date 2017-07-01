@@ -37,7 +37,7 @@ svg g.node {
   cursor : pointer;
 }
 svg .shape {
-  fill : #fff;
+  // fill : #fff;
   stroke : #666;
   stroke-width : 4;
 }
@@ -53,18 +53,19 @@ svg text {
   text-anchor : middle;
 }
 svg g.target .shape {
-  fill : rgb(0, 188, 212);;
-  stroke : #666;
+  // fill : rgb(0, 188, 212);
+  stroke : #000080;
+  stroke-width : 10;
 }
 svg g.target text {
-  fill : #fff;
-  stroke : #fff;
+  // fill : #fff;
+  // stroke : #fff;
 }
 svg g.family .shape, {
-  fill : rgb(0, 188, 212);;
-  stroke : #666;
+  stroke : #000080;
+  stroke-width : 8;
 }
 svg g.family text {
-  fill : #fff;
-  stroke : #fff;
+  // fill : #fff;
+  // stroke : #fff;
 }

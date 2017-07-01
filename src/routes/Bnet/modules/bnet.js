@@ -210,6 +210,25 @@ function completeChangeShape (value = 0) {
   }
 }
 
+function completeChangeNodeColor (value = "#ffffff") {
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+    let node = state.nodeMap[state.target];
+    if (node) {
+      let nextNode = Object.assign({}, node, {color : value});
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+      ref.update(nextNode)
+      .catch(error => {
+        console.log(error);
+        return dispatch({
+          type: 'SAVE_NODE_ERROR',
+          message: error.message,
+        });
+      });
+    }
+  }
+}
+
 function chnageNodeSuccess(val){
   return {
     type: BNET_CHANGE_NODE,
@@ -551,6 +570,7 @@ export const actions = {
   readyChangeText,
   completeChangeText,
   completeChangeShape,
+  completeChangeNodeColor,
   cutParent,
   addNode,
   removeNode,
@@ -759,8 +779,10 @@ const ACTION_HANDLERS = {
   [BNET_CURSOR_UP] : (state, action) => {
     // フィールド場でカーソルダウンからアップが素早かった場合は選択解除
     let target = state.target;
+    let targetFamily = state.targetFamily;
     if (action.payload.onField && action.payload.fastUp) {
       target = null;
+      targetFamily = {};
     }
 
     return Object.assign({}, 
@@ -771,7 +793,8 @@ const ACTION_HANDLERS = {
           drag : false,
           targetDrag : false,
         }),
-        target : target
+        target : target,
+        targetFamily : targetFamily,
       });
   },
   [BNET_CURSOR_MOVE] : (state, action) => {

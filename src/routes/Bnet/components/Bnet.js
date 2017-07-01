@@ -4,22 +4,12 @@ import Node from './Node'
 import ReactDOM from 'react-dom'
 import TextField from 'material-ui/TextField'
 import IconButton from 'material-ui/IconButton'
-import ActionHome from 'material-ui/svg-icons/action/home'
-import ContentCreate from 'material-ui/svg-icons/content/create'
-import ContentAddBox from 'material-ui/svg-icons/content/add-box'
-import ContentDeleteSweep from 'material-ui/svg-icons/content/delete-sweep'
-import ContentContentCut from 'material-ui/svg-icons/content/content-cut'
 import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
 import {f2v} from '../modules/canvasUtils'
 import {getAncestorMap, getDescentMap, getSizeMap} from '../modules/nodeUtils'
-import HardwareDeviceHub from 'material-ui/svg-icons/hardware/device-hub'
 import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
-import ToggleCheckBoxOutlineBlank from 'material-ui/svg-icons/toggle/check-box-outline-blank'
-import ToggleRadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-checked'
-import ToggleStarBorder from 'material-ui/svg-icons/toggle/star-border.js'
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import MenuItem from 'material-ui/MenuItem';
 import IconMenu from 'material-ui/IconMenu';
 import EditNodeMenu from './EditNodeMenu';
@@ -128,14 +118,6 @@ class Bnet extends React.Component {
           </form>
         );
       }
-    } else if (props.state === 2) {
-      $input = (
-        <form ref="menu" style={{position : 'absolute'}}>
-          <IconButton tooltip="" onTouchTap={props.addNode} style={buttonStyle} iconStyle={iconStyle}>
-            <ContentAddBox color={fullWhite} />
-          </IconButton>
-        </form>
-      );
     } else if (props.state === 4) {
       // 親ノード選択中
     } else if (props.target && !props.cursorState.drag) {
@@ -156,9 +138,11 @@ class Bnet extends React.Component {
             hasDescent={Object.keys(descentMap).length > 0}
             hasParent={node.parentId}
             nodeShape={node.shape}
+            nodeColor={node.color}
             addNode={props.addNode}
             readyChangeText={props.readyChangeText}
             completeChangeShape={props.completeChangeShape}
+            completeChangeNodeColor={props.completeChangeNodeColor}
             selectFamily={props.selectFamily}
             cutParent={cutParent}
             removeNode={props.removeNode}
@@ -232,6 +216,7 @@ class Bnet extends React.Component {
                     target={isTarget}
                     state={node.state}
                     shape={node.shape}
+                    color={node.color}
                     readyChangeText={props.readyChangeText}
                     cursorUpNode={props.cursorUpNode}
                     cursorDownNode={props.cursorDownNode}

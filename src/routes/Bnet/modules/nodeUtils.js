@@ -26,6 +26,7 @@ export function createNode() {
     id : "",
     childIdList : [],
     shape : 0,
+    color : "#ffffff"
   };
 }
 

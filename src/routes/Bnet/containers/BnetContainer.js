@@ -72,6 +72,9 @@ const mapDispatchToProps = {
   completeChangeShape : (e, value) => {
     return actions.completeChangeShape(value);
   },
+  completeChangeNodeColor : (e, value) => {
+    return actions.completeChangeNodeColor(value);
+  },
   cutParent : (e) => actions.cutParent(),
   addNode : (e) => {
     return actions.addNode();

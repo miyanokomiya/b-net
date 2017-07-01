@@ -56,7 +56,7 @@ class Node extends React.Component {
       p3.y = cy - bbox.height/2 - edgeV;
     } else {
       let rect = ReactDOM.findDOMNode(this.refs.shape);
-      let margin = 5;
+      let margin = 8;
       rect.x.baseVal.value = bbox.x - margin;
       rect.y.baseVal.value = bbox.y - margin;
       rect.width.baseVal.value = bbox.width + margin * 2;
@@ -82,19 +82,19 @@ class Node extends React.Component {
     let shape = "";
     if (props.shape === 1) {
       shape = (
-        <ellipse className="shape" ref="shape" rx={5} ry={5} cx={5} cy={5} />
+        <ellipse className="shape" ref="shape" fill={props.color} rx={5} ry={5} cx={5} cy={5} />
       );
     } else if (props.shape === 2) {
       shape = (
-        <circle className="shape" ref="shape" r={5} cx={5} cy={5} />
+        <circle className="shape" ref="shape" fill={props.color} r={5} cx={5} cy={5} />
       );
     } else if (props.shape === 3) {
       shape = (
-        <polygon className="shape" ref="shape" points="0,0 0,0 0,0 0,0" />
+        <polygon className="shape" ref="shape" fill={props.color} points="0,0 0,0 0,0 0,0" />
       );
     } else {
       shape = (
-        <rect className="shape" ref="shape" width={5} height={5} x={5} y={5} />
+        <rect className="shape" ref="shape" fill={props.color} width={5} height={5} x={5} y={5} />
       );
     }
 
