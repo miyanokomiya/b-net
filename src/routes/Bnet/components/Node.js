@@ -56,10 +56,10 @@ class Node extends React.Component {
       p3.y = cy - bbox.height/2 - edgeV;
     } else {
       let rect = ReactDOM.findDOMNode(this.refs.shape);
-      let margin = 8;
-      rect.x.baseVal.value = bbox.x - margin;
+      let margin = 12;
+      rect.x.baseVal.value = bbox.x - margin * 3;
       rect.y.baseVal.value = bbox.y - margin;
-      rect.width.baseVal.value = bbox.width + margin * 2;
+      rect.width.baseVal.value = bbox.width + margin * 6;
       rect.height.baseVal.value = bbox.height + margin * 2;
     }
   }
@@ -98,6 +98,22 @@ class Node extends React.Component {
       );
     }
 
+    // リンクを張れるようにする
+    let text = null;
+    if (props.target && props.text.startsWith("http://") || props.text.startsWith("https://")) {
+      text = (
+        <text ref="text" x={props.x} y={props.y} fontSize={height} >
+          <a fill="blue" href={props.text} target="_blank">{props.text}</a>
+        </text>
+      );
+    } else {
+      text = (
+        <text ref="text" x={props.x} y={props.y} fontSize={height} >
+          {props.text || "-bnet-"}
+        </text>
+      );
+    }
+
     return (
       <g onMouseUp={props.cursorUpNode}
         onTouchEnd={props.cursorUpNode}
@@ -106,9 +122,7 @@ class Node extends React.Component {
         data-id={props.id}
         className={className}>
         {shape}
-        <text ref="text" x={props.x} y={props.y} fontSize={height} >
-          {props.text || "-bnet-"}
-        </text>
+        {text}
       </g>
     )
   }
