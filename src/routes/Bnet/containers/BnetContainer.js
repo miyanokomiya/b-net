@@ -63,7 +63,7 @@ function getPoints(e) {
 
 const mapDispatchToProps = {
   disConnect : () => actions.disConnect(),
-  loadTodos : () => actions.loadTodos(),
+  loadTodos : (val) => actions.loadTodos(val),
   readyChangeText : () => actions.readyChangeText(),
   completeChangeText : (e) => {
     e.preventDefault();

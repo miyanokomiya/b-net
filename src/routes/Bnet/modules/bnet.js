@@ -1,6 +1,6 @@
 import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
 
-import {v2f, f2v, wheelCanvas, pinchCanvas} from './canvasUtils'
+import {v2f, f2v, wheelCanvas, pinchCanvas, getAdjustedViewArea} from './canvasUtils'
 import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNodeAtPoint, getDescentMap} from './nodeUtils'
 
 // ------------------------------------
@@ -60,7 +60,7 @@ export function disConnect() {
   }
 }
 
-export function loadTodos() {
+export function loadTodos(val) {
   return (dispatch, getState) => {
     let state = getState();
     if (state.bnet.roomId) {
@@ -80,6 +80,7 @@ export function loadTodos() {
             roomId : roomId,
             snapshot : snapshot,
             changeRoom : state.bnet.roomId !== roomId,
+            viewArea : val,
           }));
           ref.on('child_added',
             (snapshot) => {
@@ -621,11 +622,10 @@ const ACTION_HANDLERS = {
       nodeMap[k] = assignNode(nodeMap[k]);
     }
 
-    let viewArea = Object.assign({}, state.viewArea);
+    let viewArea = state.viewArea;
     if (action.payload.changeRoom) {
-      viewArea.left = 0;
-      viewArea.top = 0;
-      viewArea.scale = 2;
+      // 部屋変更だったら位置を初期化
+      viewArea = getAdjustedViewArea(nodeMap, action.payload.viewArea.width, action.payload.viewArea.height);
     }
 
     return Object.assign({}, 

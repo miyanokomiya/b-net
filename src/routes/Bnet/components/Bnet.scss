@@ -8,7 +8,12 @@ div.svg-box {
 }
 svg.svg-canvas {
 }
-svg line {
+svg line.cross-line {
+  fill: none;
+  stroke: #999;
+  stroke-width: 8;
+}
+svg line.node-line {
   fill: none;
   stroke: #09d;
   stroke-width: 4;
@@ -18,7 +23,7 @@ svg line {
   animation: dash 10s linear forwards;
   animation-iteration-count : infinite;
 }
-svg line.ancestor-line {
+svg line.node-line.ancestor-line {
   stroke: #ff7f50;
   stroke-width: 8;
 }

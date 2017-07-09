@@ -59,9 +59,12 @@ class Bnet extends React.Component {
 
   componentDidMount () {
     this.componentDidUpdate();
-    this.props.loadTodos();
-
     this.adjustSvgBox();
+    let svgBox = this.refs.svgBox;
+    this.props.loadTodos({
+      width : svgBox.clientWidth,
+      height : svgBox.clientHeight,
+    });
 
     // 画面リサイズでsvg領域を調整
     this._adjustSvgBox = () => {
@@ -220,6 +223,8 @@ class Bnet extends React.Component {
               onTouchEnd={props.cursorUp}
               onTouchCancel={props.cursorUp}
               onTouchMove={props.cursorMove} >
+            <line x1={0} y1={-50} x2={0} y2={50} className="cross-line" />
+            <line x1={-50} y1={0} x2={50} y2={0} className="cross-line" />
             {
               (function() {
                 let sizeMap = getSizeMap(props.nodeMap);
@@ -259,7 +264,7 @@ class Bnet extends React.Component {
                         y1={node.y}
                         x2={parent.x}
                         y2={parent.y}
-                        className={ancestorMap[node.id] === parent.id ? "ancestor-line" : ""}
+                        className={ancestorMap[node.id] === parent.id ? "ancestor-line node-line" : "node-line"}
                       />
                     )
                     lineList.push(line);

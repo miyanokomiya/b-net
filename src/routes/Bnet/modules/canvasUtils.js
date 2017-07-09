@@ -13,6 +13,35 @@ export function f2v(viewArea, p) {
   }
 }
 
+/**
+ * 表示エリアを最適化する
+ * @param {*} nodeMap ノードマップ
+ * @param {Number} viewWidth 表示領域幅
+ * @param {Number} viewHeight 表示領域高さ
+ * @return {*} 表示領域情報
+ */
+export function getAdjustedViewArea(nodeMap, viewWidth, viewHeight) {
+    // 原点を中心としたノードの縦横で最も遠い距離を取得
+    let maxW = 200;
+    let maxH = 200;
+    for (let k in nodeMap) {
+        let n = nodeMap[k];
+        maxW = Math.max(maxW, Math.abs(n.x));
+        maxH = Math.max(maxH, Math.abs(n.y));
+    }
+
+    // 最も遠い点が収まるスケール計算
+    let scaleW = maxW / ((viewWidth-50)/2);
+    let scaleH = maxH / ((viewHeight-50)/2);
+    let scale = Math.max(scaleW, scaleH);
+
+    return {
+        scale : scale,
+        left : -viewWidth / 2 * scale,
+        top : -viewHeight / 2 * scale,
+    };
+}
+
 export function wheelCanvas(state, deltaX, p) {
     let delta = deltaX < 0 ? 1.8 : -1.8;
     let scale = state.viewArea.scale / Math.pow(1.03, delta);
