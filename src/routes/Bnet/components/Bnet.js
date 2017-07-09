@@ -14,6 +14,12 @@ import MenuItem from 'material-ui/MenuItem';
 import IconMenu from 'material-ui/IconMenu';
 import EditNodeMenu from './EditNodeMenu';
 import Snackbar from 'material-ui/Snackbar';
+import AppBar from 'material-ui/AppBar';
+import ActionHome from 'material-ui/svg-icons/action/home'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import { IndexLink, Link } from 'react-router'
+import MoreVert from 'material-ui/svg-icons/navigation/more-vert'
+import DrawerMenu from './DrawerMenu'
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -24,6 +30,7 @@ class Bnet extends React.Component {
   state = {
     openSnackBar : false,
     snackBarMessage : "",
+    openDrawer : false,
   }
 
   componentDidUpdate () {
@@ -81,17 +88,8 @@ class Bnet extends React.Component {
     });
   }
 
-  closeSnackBar () {
-    this.setState({
-      openSnackBar: false,
-    });
-  };
-
   render () {
     let props = this.props;
-    let closeSnackBar = () => {
-      this.closeSnackBar();
-    };
 
     let $input = "";
 
@@ -182,77 +180,105 @@ class Bnet extends React.Component {
     let vewBox = props.viewArea.left + " " + props.viewArea.top + " " + props.viewArea.scale * props.width + " " + props.viewArea.scale * props.height;
       
     return (
-      <div ref="svgBox" className="svg-box" >
-        <svg className="svg-canvas" version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
-            viewBox={vewBox}
-            onMouseDown={props.cursorDown}
-            onMouseUp={props.cursorUp}
-            onMouseLeave={props.cursorUp}
-            onMouseMove={props.cursorMove}
-            onWheel={props.cursorWheel}
-            onTouchStart={props.cursorDown}
-            onTouchEnd={props.cursorUp}
-            onTouchCancel={props.cursorUp}
-            onTouchMove={props.cursorMove} >
-          {
-            (function() {
-              let sizeMap = getSizeMap(props.nodeMap);
+      <div>
+        <MuiThemeProvider>
+          <AppBar 
+            title={props.room.name}
+            showMenuIconButton={true}
+            iconElementLeft={
+              <Link to='/room'>
+                <IconButton><ActionHome color={fullWhite} /></IconButton>
+              </Link>
+            }
+            iconElementRight={
+              <IconButton
+                onTouchTap={() => this.setState({openDrawer:true})}
+              >
+                <MoreVert
+                  color={fullWhite}
+                />
+              </IconButton>
+            }
+          />
+        </MuiThemeProvider>
 
-              let ancestorMap = getAncestorMap(props.nodeMap, props.target);
+        <DrawerMenu
+          open={this.state.openDrawer}
+          onRequestChange={(openDrawer) => this.setState({openDrawer})}
+          execExport={() => this.openSnackBar("Sorry, this is not implemented.")}
+        />
 
-              let list = [];
-              let lineList = [];
-              let lineHelper = "";
-              for (let k in props.nodeMap) {
-                let node = props.nodeMap[k];
-                let size = sizeMap[node.id] || 0;
-                let family = (k in props.targetFamily);
-                let isTarget = node.id === props.target;
-                list.push(
-                  <Node key={node.id}
-                    id={node.id}
-                    text={node.text}
-                    x={node.x} y={node.y}
-                    target={isTarget}
-                    state={node.state}
-                    shape={node.shape}
-                    color={node.color}
-                    readyChangeText={props.readyChangeText}
-                    cursorUpNode={props.cursorUpNode}
-                    cursorDownNode={props.cursorDownNode}
-                    refSize={size}
-                    family={family} />
-                );
+        <div ref="svgBox" className="svg-box" >
+          <svg className="svg-canvas" version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
+              viewBox={vewBox}
+              onMouseDown={props.cursorDown}
+              onMouseUp={props.cursorUp}
+              onMouseLeave={props.cursorUp}
+              onMouseMove={props.cursorMove}
+              onWheel={props.cursorWheel}
+              onTouchStart={props.cursorDown}
+              onTouchEnd={props.cursorUp}
+              onTouchCancel={props.cursorUp}
+              onTouchMove={props.cursorMove} >
+            {
+              (function() {
+                let sizeMap = getSizeMap(props.nodeMap);
 
-                let parent = props.nodeMap[node.parentId];
-                if (parent) {
-                  let key = `${node.id}-${parent.id}`;
-                  let line = (
-                    <line key={key}
-                      x1={node.x}
-                      y1={node.y}
-                      x2={parent.x}
-                      y2={parent.y}
-                      className={ancestorMap[node.id] === parent.id ? "ancestor-line" : ""}
-                    />
-                  )
-                  lineList.push(line);
+                let ancestorMap = getAncestorMap(props.nodeMap, props.target);
+
+                let list = [];
+                let lineList = [];
+                let lineHelper = "";
+                for (let k in props.nodeMap) {
+                  let node = props.nodeMap[k];
+                  let size = sizeMap[node.id] || 0;
+                  let family = (k in props.targetFamily);
+                  let isTarget = node.id === props.target;
+                  list.push(
+                    <Node key={node.id}
+                      id={node.id}
+                      text={node.text}
+                      x={node.x} y={node.y}
+                      target={isTarget}
+                      state={node.state}
+                      shape={node.shape}
+                      color={node.color}
+                      readyChangeText={props.readyChangeText}
+                      cursorUpNode={props.cursorUpNode}
+                      cursorDownNode={props.cursorDownNode}
+                      refSize={size}
+                      family={family} />
+                  );
+
+                  let parent = props.nodeMap[node.parentId];
+                  if (parent) {
+                    let key = `${node.id}-${parent.id}`;
+                    let line = (
+                      <line key={key}
+                        x1={node.x}
+                        y1={node.y}
+                        x2={parent.x}
+                        y2={parent.y}
+                        className={ancestorMap[node.id] === parent.id ? "ancestor-line" : ""}
+                      />
+                    )
+                    lineList.push(line);
+                  }
                 }
-              }
-              return lineList.concat(list);
-            })()
-          }
-        </svg>
+                return lineList.concat(list);
+              })()
+            }
+          </svg>
+        </div>
+        {$input}
+        {dialog}
 
         <Snackbar
           open={this.state.openSnackBar}
           message={this.state.snackBarMessage}
           autoHideDuration={4000}
-          onRequestClose={closeSnackBar}
+          onRequestClose={() => this.setState({openSnackBar:false})}
         />
-        
-        {$input}
-        {dialog}
       </div>
     );
   }

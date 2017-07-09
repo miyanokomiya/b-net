@@ -29,18 +29,6 @@ class PageLayout extends React.Component {
 
     return (
       <div className='container text-center'>
-        <MuiThemeProvider>
-          <AppBar 
-            title={linkList}
-            showMenuIconButton={true}
-            iconElementLeft={
-              <Link to='/room'>
-                <IconButton><ActionHome color={fullWhite} /></IconButton>
-              </Link>
-            }
-            style={{backgroundColor:blue500}}
-          />
-        </MuiThemeProvider>
         <div className='page-layout__viewport'>
           {children}
         </div>
