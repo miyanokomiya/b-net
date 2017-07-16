@@ -1,6 +1,6 @@
 import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
 
-import {v2f, f2v, wheelCanvas, pinchCanvas, getAdjustedViewArea} from './canvasUtils'
+import {v2f, f2v, v2fScaler, f2vScaler, wheelCanvas, pinchCanvas, getAdjustedViewArea} from './canvasUtils'
 import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNodeAtPoint, getDescentMap} from './nodeUtils'
 
 // ------------------------------------
@@ -454,8 +454,19 @@ export function cursorMove (value) {
       // 操作対象ノードを探す
       let node = state.nodeMap[state.target];
       if (node && state.cursorState.targetDrag) {
+        // 移動先計算
+        let p = {
+          x : v2fScaler(state.viewArea, value.x - state.cursorState.cursorDownStartPoint.x),
+          y : v2fScaler(state.viewArea, value.y - state.cursorState.cursorDownStartPoint.y)
+        };
+        p.x += state.cursorState.cursorDownStartTargetPoint.x;
+        p.y += state.cursorState.cursorDownStartTargetPoint.y;
+
         // ノードを移動
-        let nextNode = moveNodeAtPoint(state, value.x, value.y, node);
+        let nextNode = Object.assign({}, node, {
+          x : p.x,
+          y : p.y,
+        });
         let dx = nextNode.x - node.x;
         let dy = nextNode.y - node.y;
         // ファミリー
@@ -764,6 +775,17 @@ const ACTION_HANDLERS = {
           drag : true,
           pinchDistance : 0,
           cursorDownStartTime : action.payload.time,
+          cursorDownStartPoint : {
+            x : action.payload.x,
+            y : action.payload.y,
+          },
+          cursorDownStartTargetPoint : target && state.nodeMap[target] ? {
+            x : state.nodeMap[target].x,
+            y : state.nodeMap[target].y,
+          } : {
+            x : 0,
+            y : 0
+          }
         }),
         menuPoint : Object.assign({}, state.menuPoint,
         {
@@ -925,6 +947,16 @@ const initialState = {
     pinchDistance : 0,
     // カーソルダウン開始時間
     cursorDownStartTime : 0,
+    // カーソルダウン開始位置
+    cursorDownStartPoint : {
+      x : 0,
+      y : 0
+    },
+    // カーソルダウン開始時の操作対象ノード位置
+    cursorDownStartTargetPoint : {
+      x : 0,
+      y : 0
+    }
   },
 }
 

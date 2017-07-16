@@ -12,6 +12,12 @@ export function f2v(viewArea, p) {
     y : (p.y - viewArea.top) / viewArea.scale,
   }
 }
+export function v2fScaler(viewArea, c) {
+  return c * viewArea.scale;
+}
+export function f2vScaler(viewArea, c) {
+  return c / viewArea.scale;
+}
 
 /**
  * 表示エリアを最適化する
@@ -36,17 +42,27 @@ export function getAdjustedViewArea(nodeMap, viewWidth, viewHeight) {
     let scale = Math.max(scaleW, scaleH);
 
     return {
-        scale : scale,
+        scale : adjustScaleLimit(scale),
         left : -viewWidth / 2 * scale,
         top : -viewHeight / 2 * scale,
     };
 }
 
+/**
+ * スケールを適正な範囲に収める
+ * @param {Number} scale スケール
+ * @return {Number} 調整後スケール
+ */
+function adjustScaleLimit(scale) {
+    scale = Math.max(scale, 0.8);
+    scale = Math.min(scale, 10);
+    return scale;
+}
+
 export function wheelCanvas(state, deltaX, p) {
     let delta = deltaX < 0 ? 1.8 : -1.8;
     let scale = state.viewArea.scale / Math.pow(1.03, delta);
-    scale = Math.max(scale, 0.1);
-    scale = Math.min(scale, 10);
+    scale = adjustScaleLimit(scale);
 
     // カーソル位置を基準にスケール変更
     let tmpViewArea = Object.assign({}, state.viewArea, {
@@ -76,8 +92,7 @@ export function pinchCanvas(state, p0, p1) {
         let delta = state.cursorState.pinchDistance - d;
 
         scale = state.viewArea.scale / Math.pow(1.01, -delta / 2);
-        scale = Math.max(scale, 0.1);
-        scale = Math.min(scale, 10);
+        scale = adjustScaleLimit(scale);
     }
 
     // カーソル位置を基準にスケール変更
