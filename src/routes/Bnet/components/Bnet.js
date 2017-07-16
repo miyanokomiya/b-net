@@ -50,14 +50,12 @@ class Bnet extends React.Component {
         const space = ReactDOM.findDOMNode(this.refs.svgBox);
         const left = space.getBoundingClientRect().left;
         menu.style.left = p.x - rect.width / 2 - left + 16 + "px";
-        menu.style.top = p.y - rect.height - 15 + "px";
+        menu.style.top = p.y + rect.height / 2 + "px";
       }
+    }
 
-      if (this.refs.textInput) {
-        let input = ReactDOM.findDOMNode(this.refs.textInput);
-        input.style.width = rect.width + "px";
-        this.refs.textInput.focus();
-      }
+    if (this.refs.textInput) {
+      this.refs.textInput.input.refs.input.focus();
     }
   }
 
@@ -117,10 +115,39 @@ class Bnet extends React.Component {
     if (props.state === 1) {
       let node = props.nodeMap[props.target];
       if (node) {
+        let completeChangeText = (e) => {
+          e.preventDefault();
+          const text = this.refs.textInput.input.refs.input.value;
+          props.completeChangeText(text);
+        };
+
         $input = (
-          <form ref="menu" onSubmit={props.completeChangeText} style={{position : 'absolute'}}>
-            <TextField name="nodeText" ref="textInput" defaultValue={node.text} style={{backgroundColor:'#fff'}} inputStyle={{textAlign : 'center'}} />
-          </form>
+          <Dialog
+            title="Node Text"
+            actions={[
+              <FlatButton
+                label="Submit"
+                primary={true}
+                onTouchTap={completeChangeText}
+              />,
+              <FlatButton
+                label="Cancel"
+                primary={true}
+                onTouchTap={props.initEditState}
+              />
+            ]}
+            modal={true}
+            open={true} >
+            <TextField
+              hintText={"bnet"}
+              multiLine={true}
+              fullWidth={true}
+              rows={5}
+              textareaStyle={{textAlign : "center"}}
+              ref="textInput"
+              defaultValue={node.text}
+            />
+          </Dialog>
         );
       }
     } else if (props.state === 4) {
@@ -260,13 +287,23 @@ class Bnet extends React.Component {
                   let parent = props.nodeMap[node.parentId];
                   if (parent) {
                     let key = `${node.id}-${parent.id}`;
+                    let classList = ["node-line"];
+                    // ビュー移動中でなければラインアニメーション用クラス追加
+                    // →スムーズになるきがする
+                    if (!props.cursorState.drag || props.cursorState.targetDrag) {
+                      classList.push("animate-line");
+                    }
+                    // 編集対象の先祖経路用クラス追加
+                    if (ancestorMap[node.id] === parent.id) {
+                      classList.push("ancestor-line");
+                    }
                     let line = (
                       <line key={key}
                         x1={node.x}
                         y1={node.y}
                         x2={parent.x}
                         y2={parent.y}
-                        className={ancestorMap[node.id] === parent.id ? "ancestor-line node-line" : "node-line"}
+                        className={classList.join(" ")}
                       />
                     )
                     lineList.push(line);

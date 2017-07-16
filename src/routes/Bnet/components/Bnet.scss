@@ -17,6 +17,8 @@ svg line.node-line {
   fill: none;
   stroke: #09d;
   stroke-width: 4;
+}
+svg line.animate-line {
   stroke-dasharray: 390 10;
   stroke-dashoffset: 0;
   -webkit-animation: dash 10s linear forwards;

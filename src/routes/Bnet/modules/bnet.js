@@ -167,6 +167,13 @@ export function readyChangeText (value = "") {
   }
 }
 
+export function initEditState () {
+  return {
+    type    : BNET_CHANGE_STATE,
+    payload : 0
+  }
+}
+
 export function completeChangeText (value = "") {
   return (dispatch, getState) => {
     let state = getState().bnet;
@@ -580,6 +587,7 @@ export const actions = {
   disConnect,
   loadTodos,
   readyChangeText,
+  initEditState,
   completeChangeText,
   completeChangeShape,
   completeChangeNodeColor,
@@ -659,8 +667,8 @@ const ACTION_HANDLERS = {
       state, 
       {
         state : action.payload,
-        target : null,
-        targetFamily : {},
+        // target : null,
+        // targetFamily : {},
       });
   },
   [BNET_CHANGE_NODE] : (state, action) => {

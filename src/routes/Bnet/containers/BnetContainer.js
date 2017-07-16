@@ -65,9 +65,9 @@ const mapDispatchToProps = {
   disConnect : () => actions.disConnect(),
   loadTodos : (val) => actions.loadTodos(val),
   readyChangeText : () => actions.readyChangeText(),
-  completeChangeText : (e) => {
-    e.preventDefault();
-    return actions.completeChangeText(e.target.nodeText.value);
+  initEditState : () => actions.initEditState(),
+  completeChangeText : (value) => {
+    return actions.completeChangeText(value);
   },
   completeChangeShape : (e, value) => {
     return actions.completeChangeShape(value);

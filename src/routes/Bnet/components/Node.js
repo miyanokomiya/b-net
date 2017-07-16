@@ -27,15 +27,15 @@ class Node extends React.Component {
 
       if (props.shape === 1) {
         let ellipse = ReactDOM.findDOMNode(this.refs.shape);
-        let edgeH = 8 + bbox.width / 10;
-        let edgeV = 8 + edgeH / 10;
+        let edgeH = 16 + bbox.width / 10;
+        let edgeV = 16 + edgeH / 10;
         ellipse.rx.baseVal.value = (bbox.width) / 2 + edgeH;
         ellipse.ry.baseVal.value = (bbox.height) / 2 + edgeV;
         ellipse.cx.baseVal.value = bbox.x + bbox.width / 2;
         ellipse.cy.baseVal.value = bbox.y + bbox.height / 2;
       } else if (props.shape === 2) {
         let circle = ReactDOM.findDOMNode(this.refs.shape);
-        let margin = 8;
+        let margin = 16;
         circle.r.baseVal.value = (Math.max(bbox.width, bbox.height)) / 2 + margin;
         circle.cx.baseVal.value = bbox.x + bbox.width / 2;
         circle.cy.baseVal.value = bbox.y + bbox.height / 2;
@@ -127,10 +127,31 @@ class Node extends React.Component {
         </text>
       );
     } else {
+      let value = "";
+      if (props.text) {
+        // 複数行は分割してtext要素を作成することで実現する
+        let lines = props.text.split(/\r\n|\r|\n/);
+        value = [];
+        // 上下の空行はサイズ認識してくれない
+        lines.forEach((line, i) => {
+          value.push(
+            <text key={i} x={props.x} y={props.y + i * height} fontSize={height} >
+              {line || ".."}
+            </text>
+          );
+        });
+      } else {
+        // 空の時の表示
+        value = (
+          <text x={props.x} y={props.y} fontSize={height} >
+            {"-bnet-"}
+          </text>
+        );
+      }
       text = (
-        <text ref="text" x={props.x} y={props.y} fontSize={height} >
-          {props.text || "-bnet-"}
-        </text>
+        <g ref="text">
+          {value}
+        </g>
       );
     }
 
