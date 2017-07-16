@@ -46,8 +46,10 @@ class Bnet extends React.Component {
           x : nodeRect.left + nodeRect.width / 2,
           y : nodeRect.top + nodeRect.height / 2
         };
-        // なぜか28くらいずれてしまうので調整
-        menu.style.left = p.x - rect.width / 2 - 28 + "px";
+        // 余白も考慮する必要あり(16はなぜかずれる)
+        const space = ReactDOM.findDOMNode(this.refs.svgBox);
+        const left = space.getBoundingClientRect().left;
+        menu.style.left = p.x - rect.width / 2 - left + 16 + "px";
         menu.style.top = p.y - rect.height - 15 + "px";
       }
 
@@ -225,8 +227,6 @@ class Bnet extends React.Component {
               onTouchEnd={props.cursorUp}
               onTouchCancel={props.cursorUp}
               onTouchMove={props.cursorMove} >
-            <line x1={0} y1={-50} x2={0} y2={50} className="cross-line" />
-            <line x1={-50} y1={0} x2={50} y2={0} className="cross-line" />
             {
               (function() {
                 let sizeMap = getSizeMap(props.nodeMap);
@@ -275,6 +275,8 @@ class Bnet extends React.Component {
                 return lineList.concat(list);
               })()
             }
+            <line x1={0} y1={-50} x2={0} y2={50} className="cross-line" />
+            <line x1={-50} y1={0} x2={50} y2={0} className="cross-line" />
           </svg>
         </div>
         {$input}
