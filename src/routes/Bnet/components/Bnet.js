@@ -40,13 +40,15 @@ class Bnet extends React.Component {
       let rect = menu.getBoundingClientRect();
       let node = this.props.nodeMap[this.props.target];
       if (node) {
-        let p = f2v(this.props.viewArea, node);
-        menu.style.left = p.x - rect.width / 2 + "px";
-        menu.style.top = p.y + 10 + "px";
-      } else {
-        let p = this.props.menuPoint;
-        menu.style.left = p.x - rect.width / 2 + "px";
-        menu.style.top = p.y - 25 + "px";
+        let nodeDom = ReactDOM.findDOMNode(this.refs.target);
+        let nodeRect = nodeDom.getBoundingClientRect();
+        let p = {
+          x : nodeRect.left + nodeRect.width / 2,
+          y : nodeRect.top + nodeRect.height / 2
+        };
+        // なぜか28くらいずれてしまうので調整
+        menu.style.left = p.x - rect.width / 2 - 28 + "px";
+        menu.style.top = p.y - rect.height - 15 + "px";
       }
 
       if (this.refs.textInput) {
@@ -240,7 +242,7 @@ class Bnet extends React.Component {
                   let family = (k in props.targetFamily);
                   let isTarget = node.id === props.target;
                   list.push(
-                    <Node key={node.id}
+                    <Node key={node.id} ref={isTarget ? "target" : ""}
                       id={node.id}
                       text={node.text}
                       x={node.x} y={node.y}
