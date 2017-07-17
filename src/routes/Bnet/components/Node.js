@@ -119,42 +119,43 @@ class Node extends React.Component {
       );
     }
 
-    // リンクを張れるようにする
     let text = null;
-    if (props.target && props.text.startsWith("http://") || props.text.startsWith("https://")) {
-      text = (
-        <text style={nodeStyle.text} ref="text" x={props.x} y={props.y} fontSize={height} >
-          <a fill="blue" href={props.text} target="_blank">{props.text}</a>
-        </text>
-      );
-    } else {
-      let value = "";
-      if (props.text) {
-        // 複数行は分割してtext要素を作成することで実現する
-        let lines = props.text.split(/\r\n|\r|\n/);
-        value = [];
-        // 上下の空行はサイズ認識してくれない
-        lines.forEach((line, i) => {
+    let value = "";
+    if (props.text) {
+      // 複数行は分割してtext要素を作成することで実現する
+      let lines = props.text.split(/\r\n|\r|\n/);
+      value = [];
+      lines.forEach((line, i) => {
+        // リンクに対応
+        if (line.startsWith("http://") || line.startsWith("https://")) {
+          value.push(
+            <text style={nodeStyle.text} key={i} x={props.x} y={props.y + i * height} fontSize={height} >
+              <a fill="blue" href={line} target="_blank">{line}</a>
+            </text>
+          );
+        } else {
+          // 上下の空行はサイズ認識してくれない
           value.push(
             <text style={nodeStyle.text} key={i} x={props.x} y={props.y + i * height} fontSize={height} >
               {line || ".."}
             </text>
           );
-        });
-      } else {
-        // 空の時の表示
-        value = (
-          <text style={nodeStyle.text} x={props.x} y={props.y} fontSize={height} >
-            {"-bnet-"}
-          </text>
-        );
-      }
-      text = (
-        <g ref="text">
-          {value}
-        </g>
+        }
+      });
+    } else {
+      // 空の時の表示
+      value = (
+        <text style={nodeStyle.text} x={props.x} y={props.y} fontSize={height} >
+          {"-bnet-"}
+        </text>
       );
     }
+
+    text = (
+      <g ref="text">
+        {value}
+      </g>
+    );
 
     return (
       <g onMouseUp={props.cursorUpNode}
