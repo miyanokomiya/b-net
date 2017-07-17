@@ -169,7 +169,7 @@ class Bnet extends React.Component {
                 onTouchTap={props.initEditState}
               />
             ]}
-            modal={true}
+            onRequestClose={props.initEditState}
             open={true} >
             <TextField
               hintText={"bnet"}

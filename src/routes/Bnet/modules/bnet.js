@@ -383,10 +383,18 @@ export function cursorUpNode (value) {
         payload : 0
       });
     } else if (state.cursorState.drag) {
-      return dispatch({
-        type: BNET_SELECT_NODE,
-        payload: targetId,
-      });
+      // 選択済みノードが対象だったらテキスト編集に移行する
+      if (state.target === targetId) {
+        return dispatch({
+          type: BNET_READY_CHANGE_TEXT,
+          payload: null,
+        });
+      } else {
+        return dispatch({
+          type: BNET_SELECT_NODE,
+          payload: targetId,
+        });
+      }
     }
   }
 }
