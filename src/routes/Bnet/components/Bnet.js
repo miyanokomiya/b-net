@@ -49,9 +49,9 @@ class Bnet extends React.Component {
         };
         // 余白も考慮する必要あり(16はなぜかずれる)
         const space = ReactDOM.findDOMNode(this.refs.svgBox);
-        const left = space.getBoundingClientRect().left;
-        menu.style.left = p.x - rect.width / 2 - left + 16 + "px";
-        menu.style.top = p.y + rect.height / 2 + "px";
+        const spaceRect = space.getBoundingClientRect();
+        menu.style.left = p.x - rect.width / 2 - spaceRect.left + "px";
+        menu.style.top = p.y - spaceRect.top + rect.height / 2 + "px";
       }
     }
 
