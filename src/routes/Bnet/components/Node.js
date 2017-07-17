@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
+import {m, nodeStyle} from './SvgStyle'
 
 class Node extends React.Component {
   static propTypes = {
@@ -91,30 +92,30 @@ class Node extends React.Component {
   render () {
     let props = this.props;
     let height = 30 + props.refSize * 7;
-    let className = "node ";
+    let shapeStyle = nodeStyle.shape;
     if (props.target) {
-      className += "target ";
+      shapeStyle = m(shapeStyle, nodeStyle.shapeTarget);
     }
     if (props.family) {
-      className += "family ";
+      shapeStyle = m(shapeStyle, nodeStyle.shapeFamily);
     }
 
     let shape = "";
     if (props.shape === 1) {
       shape = (
-        <ellipse className="shape" ref="shape" fill={props.color} rx={5} ry={5} cx={5} cy={5} />
+        <ellipse style={shapeStyle} ref="shape" fill={props.color} rx={5} ry={5} cx={5} cy={5} />
       );
     } else if (props.shape === 2) {
       shape = (
-        <circle className="shape" ref="shape" fill={props.color} r={5} cx={5} cy={5} />
+        <circle style={shapeStyle} ref="shape" fill={props.color} r={5} cx={5} cy={5} />
       );
     } else if (props.shape === 3) {
       shape = (
-        <polygon className="shape" ref="shape" fill={props.color} points="0,0 0,0 0,0 0,0" />
+        <polygon style={shapeStyle} ref="shape" fill={props.color} points="0,0 0,0 0,0 0,0" />
       );
     } else {
       shape = (
-        <rect className="shape" ref="shape" fill={props.color} width={5} height={5} x={5} y={5} />
+        <rect style={shapeStyle} ref="shape" fill={props.color} width={5} height={5} x={5} y={5} />
       );
     }
 
@@ -122,7 +123,7 @@ class Node extends React.Component {
     let text = null;
     if (props.target && props.text.startsWith("http://") || props.text.startsWith("https://")) {
       text = (
-        <text ref="text" x={props.x} y={props.y} fontSize={height} >
+        <text style={nodeStyle.text} ref="text" x={props.x} y={props.y} fontSize={height} >
           <a fill="blue" href={props.text} target="_blank">{props.text}</a>
         </text>
       );
@@ -135,7 +136,7 @@ class Node extends React.Component {
         // 上下の空行はサイズ認識してくれない
         lines.forEach((line, i) => {
           value.push(
-            <text key={i} x={props.x} y={props.y + i * height} fontSize={height} >
+            <text style={nodeStyle.text} key={i} x={props.x} y={props.y + i * height} fontSize={height} >
               {line || ".."}
             </text>
           );
@@ -143,7 +144,7 @@ class Node extends React.Component {
       } else {
         // 空の時の表示
         value = (
-          <text x={props.x} y={props.y} fontSize={height} >
+          <text style={nodeStyle.text} x={props.x} y={props.y} fontSize={height} >
             {"-bnet-"}
           </text>
         );
@@ -161,7 +162,8 @@ class Node extends React.Component {
         onMouseDown={props.cursorDownNode}
         onTouchStart={props.cursorDownNode}
         data-id={props.id}
-        className={className}>
+        style={nodeStyle.g}
+      >
         {shape}
         {text}
       </g>

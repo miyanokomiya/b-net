@@ -7,7 +7,7 @@ import IconButton from 'material-ui/IconButton'
 import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
-import {f2v} from '../modules/canvasUtils'
+import {f2v, v2f, v2fScaler} from '../modules/canvasUtils'
 import {getAncestorMap, getDescentMap, getSizeMap} from '../modules/nodeUtils'
 import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
 import MenuItem from 'material-ui/MenuItem';
@@ -20,6 +20,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { IndexLink, Link } from 'react-router'
 import MoreVert from 'material-ui/svg-icons/navigation/more-vert'
 import DrawerMenu from './DrawerMenu'
+import {m, svgStyle, lineStyle} from './SvgStyle'
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -91,6 +92,37 @@ class Bnet extends React.Component {
       openSnackBar: true,
       snackBarMessage : message,
     });
+  }
+
+  serializeSvg () {
+    let svgDom = ReactDOM.findDOMNode(this.refs.svg).cloneNode(true);
+
+    // 表示領域をキャンバス領域とするよう調整
+    let svgBox = ReactDOM.findDOMNode(this.refs.svgBox);
+    let viewBox = svgDom.attributes.viewBox;
+    let values = viewBox.value.split(" ");
+    // キャンバスサイズを表示サイズに合わせる
+    svgDom.attributes.width.value = v2fScaler(this.props.viewArea, svgBox.clientWidth);
+    svgDom.attributes.height.value = v2fScaler(this.props.viewArea, svgBox.clientHeight);
+    // viewBoxをキャンバスサイズに
+    values[2] = svgDom.attributes.width.value - parseFloat(values[0]);
+    values[3] = svgDom.attributes.height.value - parseFloat(values[1]);
+    viewBox.value = values.join(" ");
+
+    let serializer = new XMLSerializer();
+    let xml = serializer.serializeToString(svgDom);
+
+    // ダウンロード処理
+    var blob = new Blob([ xml ], { "type" : "text/plain" });
+    if (window.navigator.msSaveBlob) { 
+      window.navigator.msSaveBlob(blob, "canvas.svg");
+    } else {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.target = '_blank';
+      a.download = 'canvas.svg';
+      a.click();
+    }
   }
 
   render () {
@@ -211,7 +243,7 @@ class Bnet extends React.Component {
       </Dialog>
     );
 
-    let vewBox = props.viewArea.left + " " + props.viewArea.top + " " + props.viewArea.scale * props.width + " " + props.viewArea.scale * props.height;
+    let vewBox = props.viewArea.left + " " + props.viewArea.top + " " + props.width * props.viewArea.scale + " " + props.height * props.viewArea.scale;
       
     return (
       <div>
@@ -239,11 +271,11 @@ class Bnet extends React.Component {
         <DrawerMenu
           open={this.state.openDrawer}
           onRequestChange={(openDrawer) => this.setState({openDrawer})}
-          execExport={() => this.openSnackBar("Sorry, this is not implemented.")}
+          execExport={() => {this.serializeSvg()}}
         />
 
         <div ref="svgBox" className="svg-box" >
-          <svg className="svg-canvas" version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
+          <svg ref="svg" style={svgStyle} version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
               viewBox={vewBox}
               onMouseDown={props.cursorDown}
               onMouseUp={props.cursorUp}
@@ -287,15 +319,11 @@ class Bnet extends React.Component {
                   let parent = props.nodeMap[node.parentId];
                   if (parent) {
                     let key = `${node.id}-${parent.id}`;
-                    let classList = ["node-line"];
+                    let classList = [];
                     // ビュー移動中でなければラインアニメーション用クラス追加
                     // →スムーズになるきがする
                     if (!props.cursorState.drag || props.cursorState.targetDrag) {
                       classList.push("animate-line");
-                    }
-                    // 編集対象の先祖経路用クラス追加
-                    if (ancestorMap[node.id] === parent.id) {
-                      classList.push("ancestor-line");
                     }
                     let line = (
                       <line key={key}
@@ -303,6 +331,7 @@ class Bnet extends React.Component {
                         y1={node.y}
                         x2={parent.x}
                         y2={parent.y}
+                        style={m(lineStyle.nodeLine, ancestorMap[node.id] === parent.id ? lineStyle.ancestorLine : {})}
                         className={classList.join(" ")}
                       />
                     )
@@ -312,8 +341,8 @@ class Bnet extends React.Component {
                 return lineList.concat(list);
               })()
             }
-            <line x1={0} y1={-50} x2={0} y2={50} className="cross-line" />
-            <line x1={-50} y1={0} x2={50} y2={0} className="cross-line" />
+            <line x1={0} y1={-50} x2={0} y2={50} style={lineStyle.crossLine} />
+            <line x1={-50} y1={0} x2={50} y2={0} style={lineStyle.crossLine} />
           </svg>
         </div>
         {$input}

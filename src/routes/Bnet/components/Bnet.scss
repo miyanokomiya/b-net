@@ -6,28 +6,12 @@ div.svg-box {
   border : 1px #000 solid;
   overflow: hidden;
 }
-svg.svg-canvas {
-}
-svg line.cross-line {
-  fill: none;
-  stroke: #999;
-  stroke-width: 8;
-}
-svg line.node-line {
-  fill: none;
-  stroke: #09d;
-  stroke-width: 4;
-}
 svg line.animate-line {
   stroke-dasharray: 390 10;
   stroke-dashoffset: 0;
   -webkit-animation: dash 10s linear forwards;
   animation: dash 10s linear forwards;
   animation-iteration-count : infinite;
-}
-svg line.node-line.ancestor-line {
-  stroke: #ff7f50;
-  stroke-width: 8;
 }
 @-webkit-keyframes dash {
   to {
@@ -38,40 +22,4 @@ svg line.node-line.ancestor-line {
   to {
     stroke-dashoffset: 1200;
   }
-}
-svg g.node {
-  cursor : pointer;
-}
-svg .shape {
-  // fill : #fff;
-  stroke : #666;
-  stroke-width : 4;
-}
-svg rect {
-  rx : 7;
-  ry : 7;
-}
-svg ellipse {
-}
-svg text {
-  fill : black;
-  stroke : black;
-  text-anchor : middle;
-}
-svg g.target .shape {
-  // fill : rgb(0, 188, 212);
-  stroke : #000080;
-  stroke-width : 10;
-}
-svg g.target text {
-  // fill : #fff;
-  // stroke : #fff;
-}
-svg g.family .shape, {
-  stroke : #000080;
-  stroke-width : 8;
-}
-svg g.family text {
-  // fill : #fff;
-  // stroke : #fff;
 }
