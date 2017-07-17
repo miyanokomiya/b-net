@@ -104,9 +104,9 @@ class Bnet extends React.Component {
     // キャンバスサイズを表示サイズに合わせる
     svgDom.attributes.width.value = v2fScaler(this.props.viewArea, svgBox.clientWidth);
     svgDom.attributes.height.value = v2fScaler(this.props.viewArea, svgBox.clientHeight);
-    // viewBoxをキャンバスサイズに
-    values[2] = svgDom.attributes.width.value - parseFloat(values[0]);
-    values[3] = svgDom.attributes.height.value - parseFloat(values[1]);
+    // viewBoxをキャンバスサイズに合わせる(違和感のある調整だがこれでうまくいく)
+    values[2] = svgDom.attributes.width.value;
+    values[3] = svgDom.attributes.height.value;
     viewBox.value = values.join(" ");
 
     let serializer = new XMLSerializer();
