@@ -128,7 +128,8 @@ class Bnet extends React.Component {
   render () {
     let props = this.props;
 
-    let $input = "";
+    let textDialog = "";
+    let editMenu = "";
 
     let iconSize = 18;
     let buttonStyle = {
@@ -153,7 +154,7 @@ class Bnet extends React.Component {
           props.completeChangeText(text);
         };
 
-        $input = (
+        textDialog = (
           <Dialog
             title="Node Text"
             actions={[
@@ -197,7 +198,7 @@ class Bnet extends React.Component {
           props.cutParent(e);
         };
 
-        $input = (
+        editMenu = (
           <EditNodeMenu ref="menu"
             hasDescent={Object.keys(descentMap).length > 0}
             hasParent={node.parentId}
@@ -344,8 +345,9 @@ class Bnet extends React.Component {
             <line x1={0} y1={-50} x2={0} y2={50} style={lineStyle.crossLine} />
             <line x1={-50} y1={0} x2={50} y2={0} style={lineStyle.crossLine} />
           </svg>
+          {editMenu}
         </div>
-        {$input}
+        {textDialog}
         {dialog}
 
         <Snackbar
