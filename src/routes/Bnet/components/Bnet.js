@@ -94,6 +94,9 @@ class Bnet extends React.Component {
     });
   }
 
+  /**
+   * SVG出力
+   */
   serializeSvg () {
     let svgDom = ReactDOM.findDOMNode(this.refs.svg).cloneNode(true);
 
@@ -112,17 +115,65 @@ class Bnet extends React.Component {
     let serializer = new XMLSerializer();
     let xml = serializer.serializeToString(svgDom);
 
+    this.downloadText(xml, `${this.props.room.name}.svg`);
+  }
+
+  /**
+   * json出力
+   */
+  serializeJson () {
+    let obj = {
+      nodeMap : this.props.nodeMap,
+      room : this.props.room,
+    }
+    let json = JSON.stringify(obj);
+    this.downloadText(json, `${this.props.room.name}.json`);
+  }
+
+  /**
+   * テキストファイルダウンロード
+   * @param {String} text 内容
+   * @param {String} fileName ファイル名 
+   */
+  downloadText (text, fileName) {
     // ダウンロード処理
-    var blob = new Blob([ xml ], { "type" : "text/plain" });
+    var blob = new Blob([ text ], { "type" : "text/plain" });
     if (window.navigator.msSaveBlob) { 
-      window.navigator.msSaveBlob(blob, "canvas.svg");
+      window.navigator.msSaveBlob(blob, fileName);
     } else {
       var a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.target = '_blank';
-      a.download = 'canvas.svg';
+      a.download = fileName;
       a.click();
     }
+  }
+
+  /**
+   * jsonインポート
+   */
+  importJson() {
+    var input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.addEventListener("change", (e) => {
+      let file = e.target.files;
+      //FileReaderの作成
+      let reader = new FileReader();
+      //テキスト形式で読み込む
+      reader.readAsText(file[0]);
+      
+      //読込終了後の処理
+      reader.onload = (ev) => {
+        try {
+          let json = JSON.parse(reader.result);
+          this.props.importJson(json);
+        } catch (e) {
+          this.openSnackBar("Invalid file.");
+        }
+      }
+    });
+    input.click();
   }
 
   render () {
@@ -272,7 +323,9 @@ class Bnet extends React.Component {
         <DrawerMenu
           open={this.state.openDrawer}
           onRequestChange={(openDrawer) => this.setState({openDrawer})}
-          execExport={() => {this.serializeSvg()}}
+          execExportSvg={() => {this.serializeSvg()}}
+          execExportJson={() => {this.serializeJson()}}
+          execImportJson={(e) => {this.importJson(e)}}
         />
 
         <div ref="svgBox" className="svg-box" >

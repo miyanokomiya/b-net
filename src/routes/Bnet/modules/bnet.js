@@ -31,6 +31,7 @@ export const BNET_CLEAR = 'BNET_CLEAR'
 
 export const BNET_SELECT_FAMILY = 'BNET_SELECT_FAMILY'
 export const BNET_READY_SELECT_PARENT = 'BNET_READY_SELECT_PARENT'
+export const BNET_IMPORT_JSON = 'BNET_IMPORT_JSON'
 
 const DEFAULT_ROOM = 'bnet-default'
 
@@ -157,6 +158,33 @@ function loadTodosError(error){
       type: 'TODOS_RECIVE_ERROR',
       message: error.message
     }
+  }
+}
+
+export function importJson (json) {
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+    let newMap = Object.assign({}, state.nodeMap);
+    for (let k in newMap) {
+      newMap[k] = null;
+    }
+    newMap = Object.assign({}, newMap, json.nodeMap);
+
+    let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
+    ref.update(newMap)
+    .then(() => {
+      return dispatch({
+        type    : BNET_IMPORT_JSON,
+        payload : null
+      });
+    })
+    .catch(error => {
+      console.log(error);
+      return dispatch({
+        type: 'SAVE_NODE_ERROR',
+        message: error.message,
+      });
+    });
   }
 }
 
@@ -594,6 +622,7 @@ function selectFamily(value){
 export const actions = {
   disConnect,
   loadTodos,
+  importJson,
   readyChangeText,
   initEditState,
   completeChangeText,
@@ -661,6 +690,18 @@ const ACTION_HANDLERS = {
         nodeMap : nodeMap,
         viewArea : viewArea,
         notAuth : false,
+        state : 0,
+        target : null,
+        targetFamily : {},
+      });
+  },
+  [BNET_IMPORT_JSON] : (state, action) => {
+    return Object.assign({}, 
+      state, 
+      {
+        state : 0,
+        target : null,
+        targetFamily : {},
       });
   },
   [BNET_READY_CHANGE_TEXT] : (state, action) => {
