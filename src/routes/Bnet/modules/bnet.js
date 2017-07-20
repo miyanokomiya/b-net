@@ -265,6 +265,35 @@ function completeChangeNodeColor (value = "#ffffff") {
   }
 }
 
+function completeChangeNodeStar (value) {
+  return (dispatch, getState) => {
+    let state = getState().bnet;
+    let node = state.nodeMap[state.target];
+    if (node) {
+      let user = firebaseAuth.currentUser;
+      let starList = node.starList.concat();
+      const index = node.starList.indexOf(user.uid);
+      if (index === -1) {
+        // スター追加
+        starList.push(user.uid);
+      } else {
+        // スター削除
+        starList.splice(index, 1);
+      }
+      let nextNode = Object.assign({}, node, {starList : starList});
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
+      ref.update(nextNode)
+      .catch(error => {
+        console.log(error);
+        return dispatch({
+          type: 'SAVE_NODE_ERROR',
+          message: error.message,
+        });
+      });
+    }
+  }
+}
+
 function chnageNodeSuccess(val){
   return {
     type: BNET_CHANGE_NODE,
@@ -628,6 +657,7 @@ export const actions = {
   completeChangeText,
   completeChangeShape,
   completeChangeNodeColor,
+  completeChangeNodeStar,
   cutParent,
   addNode,
   removeNode,
@@ -721,7 +751,12 @@ const ACTION_HANDLERS = {
       });
   },
   [BNET_CHANGE_NODE] : (state, action) => {
-    let nextNodeMap = Object.assign({}, state.nodeMap, action.payload);
+    let nodeMap = action.payload;
+    let tmp = {};
+    for (let k in nodeMap) {
+      tmp[k] = assignNode(nodeMap[k]);
+    }
+    let nextNodeMap = Object.assign({}, state.nodeMap, tmp);
     return Object.assign({}, 
       state, 
       {

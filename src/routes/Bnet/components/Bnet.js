@@ -21,6 +21,7 @@ import { IndexLink, Link } from 'react-router'
 import MoreVert from 'material-ui/svg-icons/navigation/more-vert'
 import DrawerMenu from './DrawerMenu'
 import {m, svgStyle, lineStyle} from './SvgStyle'
+import {firebaseAuth} from '../../../../firebase/'
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -255,10 +256,12 @@ class Bnet extends React.Component {
             hasParent={node.parentId}
             nodeShape={node.shape}
             nodeColor={node.color}
+            isStar={node.starList.indexOf(firebaseAuth.currentUser.uid) !== -1}
             addNode={props.addNode}
             readyChangeText={props.readyChangeText}
             completeChangeShape={props.completeChangeShape}
             completeChangeNodeColor={props.completeChangeNodeColor}
+            completeChangeNodeStar={props.completeChangeNodeStar}
             selectFamily={props.selectFamily}
             cutParent={cutParent}
             removeNode={props.removeNode}
@@ -363,6 +366,7 @@ class Bnet extends React.Component {
                       state={node.state}
                       shape={node.shape}
                       color={node.color}
+                      starList={node.starList}
                       readyChangeText={props.readyChangeText}
                       cursorUpNode={props.cursorUpNode}
                       cursorDownNode={props.cursorDownNode}

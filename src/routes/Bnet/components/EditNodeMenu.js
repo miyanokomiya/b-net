@@ -14,10 +14,11 @@ import HardwareDeviceHub from 'material-ui/svg-icons/hardware/device-hub'
 import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
 import ToggleCheckBoxOutlineBlank from 'material-ui/svg-icons/toggle/check-box-outline-blank'
 import ToggleRadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-checked'
-import ToggleStarBorder from 'material-ui/svg-icons/toggle/star-border.js'
 import MenuItem from 'material-ui/MenuItem';
 import IconMenu from 'material-ui/IconMenu';
 import ImagePalette from 'material-ui/svg-icons/image/palette'
+import ActionThumbUp from 'material-ui/svg-icons/action/thumb-up'
+import ActionThumbDown from 'material-ui/svg-icons/action/thumb-down'
 
 class EditNodeMenu extends React.Component {
   static propTypes = {
@@ -47,6 +48,12 @@ class EditNodeMenu extends React.Component {
       backgroundColor: "#999"
     });
     
+    // スターボタン、自分がスター付けていたらスター解除ボタン
+    let starButton = (
+      <IconButton tooltip="" onTouchTap={props.completeChangeNodeStar} style={buttonStyle} iconStyle={iconStyle}>
+        {props.isStar ? <ActionThumbDown color={fullWhite} /> : <ActionThumbUp color={fullWhite} />}
+      </IconButton>
+    );
     // ノード追加ボタン
     let addNodeButton = (
       <IconButton tooltip="" onTouchTap={props.addNode} style={buttonStyle} iconStyle={iconStyle}>
@@ -118,6 +125,7 @@ class EditNodeMenu extends React.Component {
     
     return (
       <form style={{position : 'absolute', display : 'flex'}}>
+        {starButton}
         {addNodeButton}
         {editTextButton}
         {selectShapeButton}

@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import {m, nodeStyle} from './SvgStyle'
+import ToggleStarBorder from 'material-ui/svg-icons/toggle/star-border.js'
 
 class Node extends React.Component {
   static propTypes = {
@@ -25,6 +26,9 @@ class Node extends React.Component {
     if (!this.state.adjusted) {
       let text = ReactDOM.findDOMNode(this.refs.text);
       var bbox = text.getBBox();
+
+      let starList = ReactDOM.findDOMNode(this.refs.starList);
+
 
       if (props.shape === 1) {
         let ellipse = ReactDOM.findDOMNode(this.refs.shape);
@@ -157,6 +161,30 @@ class Node extends React.Component {
       </g>
     );
 
+    let starList = [];
+    let nodeStarList = props.starList;
+    let odd = (nodeStarList.length % 2 === 0);
+    let size = height * 1.5;
+    let rate = size / 28;
+    let dSufix = `l ${-5 * rate},${7 * rate} l ${-8 * rate},${0 * rate} l ${5 * rate},${5 * rate} l ${-3 * rate},${8 * rate} l ${11 * rate},${-5 * rate} l ${11 * rate},${5 * rate} l ${-3 * rate},${-8 * rate} l ${5 * rate},${-5 * rate} l ${-8 * rate},${0 * rate} Z`;
+    nodeStarList.forEach((user, i) => {
+      let dx = 0;
+      if (odd) {
+        dx = Math.floor((i + 1) / 2) * size;
+        dx = (i % 2) === 0 ? -dx : dx;
+        dx -= size / 2;
+      } else {
+        if (i > 0) {
+          dx = Math.floor((i + 1) / 2) * size + size / 2;
+          dx = (i % 2) === 0 ? -dx : dx;
+        }
+      }
+      let d = `M ${props.x + dx},${props.y - 2.2 * height} ${dSufix}`;
+      starList.push((
+        <path key={i} style={nodeStyle.star} fill={props.color} d={d} />
+      ));
+    });
+
     return (
       <g onMouseUp={props.cursorUpNode}
         onTouchEnd={props.cursorUpNode}
@@ -167,6 +195,7 @@ class Node extends React.Component {
       >
         {shape}
         {text}
+        {starList}
       </g>
     )
   }

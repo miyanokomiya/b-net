@@ -52,4 +52,9 @@ export const nodeStyle = {
     stroke : "#000080",
     strokeWidth : 8,
   },
+  star : {
+    fill : "gold",
+    strokeWidth : 2,
+    stroke : "black",
+  }
 }

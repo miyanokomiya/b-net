@@ -76,6 +76,9 @@ const mapDispatchToProps = {
   completeChangeNodeColor : (e, value) => {
     return actions.completeChangeNodeColor(value);
   },
+  completeChangeNodeStar : (e, value) => {
+    return actions.completeChangeNodeStar(value);
+  },
   cutParent : (e) => actions.cutParent(),
   addNode : (e) => {
     return actions.addNode();
