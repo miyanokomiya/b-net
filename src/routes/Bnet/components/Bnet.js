@@ -116,7 +116,7 @@ class Bnet extends React.Component {
     let serializer = new XMLSerializer();
     let xml = serializer.serializeToString(svgDom);
 
-    this.downloadText(xml, `${this.props.room.name}.svg`);
+    this.downloadText(xml, `${this.props.room.name || "b-net"}.svg`);
   }
 
   /**
@@ -128,7 +128,7 @@ class Bnet extends React.Component {
       room : this.props.room,
     }
     let json = JSON.stringify(obj);
-    this.downloadText(json, `${this.props.room.name}.json`);
+    this.downloadText(json, `${this.props.room.name || "b-net"}.json`);
   }
 
   /**
