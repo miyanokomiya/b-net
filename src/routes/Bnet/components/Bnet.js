@@ -256,7 +256,7 @@ class Bnet extends React.Component {
             hasParent={node.parentId}
             nodeShape={node.shape}
             nodeColor={node.color}
-            isStar={node.starList.indexOf(firebaseAuth.currentUser.uid) !== -1}
+            isStar={node.userStar[firebaseAuth.currentUser.uid]}
             addNode={props.addNode}
             readyChangeText={props.readyChangeText}
             completeChangeShape={props.completeChangeShape}
@@ -366,7 +366,7 @@ class Bnet extends React.Component {
                       state={node.state}
                       shape={node.shape}
                       color={node.color}
-                      starList={node.starList}
+                      userStar={node.userStar}
                       readyChangeText={props.readyChangeText}
                       cursorUpNode={props.cursorUpNode}
                       cursorDownNode={props.cursorDownNode}

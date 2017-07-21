@@ -24,10 +24,9 @@ export function createNode() {
     parentId : null,
     text : "",
     id : "",
-    childIdList : [],
     shape : 0,
     color : "#ffffff",
-    starList : [],
+    userStar : {},
   };
 }
 

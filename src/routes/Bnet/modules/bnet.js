@@ -207,9 +207,8 @@ export function completeChangeText (value = "") {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
     if (node) {
-      let nextNode = Object.assign({}, node, {text : value});
       let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-      ref.update(nextNode)
+      ref.update({text : value})
       .then(() => {
         return dispatch({
           type    : BNET_CHANGE_STATE,
@@ -232,9 +231,8 @@ function completeChangeShape (value = 0) {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
     if (node) {
-      let nextNode = Object.assign({}, node, {shape : value});
       let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-      ref.update(nextNode)
+      ref.update({shape : value})
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -251,9 +249,8 @@ function completeChangeNodeColor (value = "#ffffff") {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
     if (node) {
-      let nextNode = Object.assign({}, node, {color : value});
       let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-      ref.update(nextNode)
+      ref.update({color : value})
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -271,18 +268,16 @@ function completeChangeNodeStar (value) {
     let node = state.nodeMap[state.target];
     if (node) {
       let user = firebaseAuth.currentUser;
-      let starList = node.starList.concat();
-      const index = node.starList.indexOf(user.uid);
-      if (index === -1) {
+      let data = {};
+      if (!node.userStar[user.uid]) {
         // スター追加
-        starList.push(user.uid);
+        data[user.uid] = true;
       } else {
         // スター削除
-        starList.splice(index, 1);
+        data[user.uid] = null;
       }
-      let nextNode = Object.assign({}, node, {starList : starList});
-      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-      ref.update(nextNode)
+      let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}/userStar`);
+      ref.update(data)
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -306,9 +301,8 @@ export function cutParent (value) {
     let state = getState().bnet;
     let node = state.nodeMap[state.target];
     if (node) {
-      let nextNode = Object.assign({}, node, {parentId : null});
       let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-      ref.update(nextNode)
+      ref.update({parentId : null})
       .catch(error => {
         console.log(error);
         return dispatch({
@@ -389,18 +383,6 @@ function removeNodeSuccess(snapshot){
   }
 }
 
-export function saveNode (value) {
-    return (dispatch, getState) => {
-      let state = getState().bnet;
-      let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
-      ref.push(value)
-      .catch(error => dispatch({
-        type: 'SAVE_NODE_ERROR',
-        message: error.message,
-      }));
-  }
-}
-
 export function cursorUpNode (value) {
   return (dispatch, getState) => {
     let state = getState().bnet;
@@ -423,9 +405,8 @@ export function cursorUpNode (value) {
       // 自分と子孫を親にはできない
       let descentMap = getDescentMap(state.nodeMap, node.id, true);
       if (!(targetId in descentMap)) {
-        let nextNode = Object.assign({}, node, {parentId : targetId});
         let ref = firebaseDb.ref(`nodemap/${state.roomId}/${node.id}`);
-        ref.update(nextNode)
+        ref.update({parentId : targetId})
         .catch(error => {
           console.log(error);
           return dispatch({
@@ -573,15 +554,34 @@ export function cursorMove (value) {
 
         if (!cursorMoveCommitTimer) {
           cursorMoveCommitFunc = () => {
-            let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
-            ref.update(cursorMoveCommitData)
-            .catch(error => {
-              console.log(error);
-              return dispatch({
-                type: 'SAVE_NODE_ERROR',
-                payload: error.message,
+            let keys = Object.keys(cursorMoveCommitData);
+            if (keys.length === 1) {
+              // 1つだけなら座標のみを更新可能
+              let node = cursorMoveCommitData[keys[0]];
+              let ref = firebaseDb.ref(`nodemap/${state.roomId}/${keys[0]}`);
+              ref.update({
+                x : node.x,
+                y : node.y,
+              })
+              .catch(error => {
+                console.log(error);
+                return dispatch({
+                  type: 'SAVE_NODE_ERROR',
+                  payload: error.message,
+                });
               });
-            });
+            } else {
+              // 2つ以上あるならまとめて更新してしまう
+              let ref = firebaseDb.ref(`nodemap/${state.roomId}`);
+              ref.update(cursorMoveCommitData)
+              .catch(error => {
+                console.log(error);
+                return dispatch({
+                  type: 'SAVE_NODE_ERROR',
+                  payload: error.message,
+                });
+              });
+            }
           }
 
           cursorMoveCommitTimer = setTimeout(() => {
@@ -769,6 +769,7 @@ const ACTION_HANDLERS = {
       // 追加済みは無視
       return state;
     } else {
+      node = assignNode(node);
       let nextNodeMap = Object.assign({}, state.nodeMap);
       nextNodeMap[node.id] = node;
 

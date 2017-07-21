@@ -27,7 +27,7 @@ class Node extends React.Component {
       let text = ReactDOM.findDOMNode(this.refs.text);
       var bbox = text.getBBox();
 
-      let starList = ReactDOM.findDOMNode(this.refs.starList);
+      let userStar = ReactDOM.findDOMNode(this.refs.userStar);
 
 
       if (props.shape === 1) {
@@ -161,29 +161,31 @@ class Node extends React.Component {
       </g>
     );
 
-    let starList = [];
-    let nodeStarList = props.starList;
-    let odd = (nodeStarList.length % 2 === 0);
-    let size = height * 1.5;
-    let rate = size / 28;
-    let dSufix = `l ${-5 * rate},${7 * rate} l ${-8 * rate},${0 * rate} l ${5 * rate},${5 * rate} l ${-3 * rate},${8 * rate} l ${11 * rate},${-5 * rate} l ${11 * rate},${5 * rate} l ${-3 * rate},${-8 * rate} l ${5 * rate},${-5 * rate} l ${-8 * rate},${0 * rate} Z`;
-    nodeStarList.forEach((user, i) => {
-      let dx = 0;
-      if (odd) {
-        dx = Math.floor((i + 1) / 2) * size;
-        dx = (i % 2) === 0 ? -dx : dx;
-        dx -= size / 2;
-      } else {
-        if (i > 0) {
-          dx = Math.floor((i + 1) / 2) * size + size / 2;
+    let userStar = [];
+    if (props.userStar) {
+      let nodeStarList = Object.keys(props.userStar);
+      let odd = (nodeStarList.length % 2 === 0);
+      let size = height * 1.5;
+      let rate = size / 28;
+      let dSufix = `l ${-5 * rate},${7 * rate} l ${-8 * rate},${0 * rate} l ${5 * rate},${5 * rate} l ${-3 * rate},${8 * rate} l ${11 * rate},${-5 * rate} l ${11 * rate},${5 * rate} l ${-3 * rate},${-8 * rate} l ${5 * rate},${-5 * rate} l ${-8 * rate},${0 * rate} Z`;
+      nodeStarList.forEach((user, i) => {
+        let dx = 0;
+        if (odd) {
+          dx = Math.floor((i + 1) / 2) * size;
           dx = (i % 2) === 0 ? -dx : dx;
+          dx -= size / 2;
+        } else {
+          if (i > 0) {
+            dx = Math.floor((i + 1) / 2) * size + size / 2;
+            dx = (i % 2) === 0 ? -dx : dx;
+          }
         }
-      }
-      let d = `M ${props.x + dx},${props.y - 2.2 * height} ${dSufix}`;
-      starList.push((
-        <path key={i} style={nodeStyle.star} fill={props.color} d={d} />
-      ));
-    });
+        let d = `M ${props.x + dx},${props.y - 2.2 * height} ${dSufix}`;
+        userStar.push((
+          <path key={i} style={nodeStyle.star} fill={props.color} d={d} />
+        ));
+      });
+    }
 
     return (
       <g onMouseUp={props.cursorUpNode}
@@ -195,7 +197,7 @@ class Node extends React.Component {
       >
         {shape}
         {text}
-        {starList}
+        {userStar}
       </g>
     )
   }
