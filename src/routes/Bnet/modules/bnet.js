@@ -596,10 +596,17 @@ export function cursorMove (value) {
         });
       } else {
         // ビューを移動
-        return dispatch({
-          type: BNET_MOVE_VIEW,
-          payload: value,
-        });
+        if (!cursorMoveCommitTimer) {
+          cursorMoveCommitFunc = () => {
+            return dispatch({
+              type: BNET_MOVE_VIEW,
+              payload: value,
+            });
+          };
+          cursorMoveCommitTimer = setTimeout(() => {
+            cursorMoveCommitExec();
+          }, 30);
+        }
       }
     }
   }

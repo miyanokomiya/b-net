@@ -52,7 +52,7 @@ class Bnet extends React.Component {
         const space = ReactDOM.findDOMNode(this.refs.svgBox);
         const spaceRect = space.getBoundingClientRect();
         menu.style.left = p.x - rect.width / 2 - spaceRect.left + "px";
-        menu.style.top = p.y - spaceRect.top + rect.height / 2 + "px";
+        menu.style.top = p.y - spaceRect.top + rect.height / 4 + "px";
       }
     }
 

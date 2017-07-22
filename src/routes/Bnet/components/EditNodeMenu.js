@@ -98,10 +98,10 @@ class EditNodeMenu extends React.Component {
         value={props.nodeColor}
         onChange={props.completeChangeNodeColor}
       >
-        <MenuItem value={"#ffffff"} primaryText="White" />
-        <MenuItem value={"#32cd32"} primaryText="Green" />
-        <MenuItem value={"#ffd700"} primaryText="Yellow" />
-        <MenuItem value={"#ff6347"} primaryText="Red" />
+        <MenuItem value={"#ffffff"} primaryText="White" style={{backgroundColor:"#ffffff"}} />
+        <MenuItem value={"#32cd32"} primaryText="Green" style={{backgroundColor:"#32cd32"}} />
+        <MenuItem value={"#ffd700"} primaryText="Yellow" style={{backgroundColor:"#ffd700"}} />
+        <MenuItem value={"#ff6347"} primaryText="Red" style={{backgroundColor:"#ff6347"}} />
       </IconMenu>
     );
     // 子孫がいるなら子孫一括選択ボタンを表示
@@ -124,12 +124,12 @@ class EditNodeMenu extends React.Component {
     );
     
     return (
-      <form style={{position : 'absolute', display : 'flex'}}>
+      <form style={{position : 'absolute', display : 'inline-table'}}>
         {starButton}
         {addNodeButton}
-        {editTextButton}
+        {/*editTextButton*/}
         {selectShapeButton}
-        {selectColorButton}
+        {selectColorButton}<br/>
         {selectFamilyButton}
         {cutButton}
         {removeNodeButton}
