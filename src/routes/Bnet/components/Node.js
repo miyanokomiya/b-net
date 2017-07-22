@@ -172,7 +172,7 @@ class Node extends React.Component {
           dx -= size / 2;
         } else {
           if (i > 0) {
-            dx = Math.floor((i + 1) / 2) * size + size / 2;
+            dx = Math.floor((i + 1) / 2) * size;
             dx = (i % 2) === 0 ? -dx : dx;
           }
         }
