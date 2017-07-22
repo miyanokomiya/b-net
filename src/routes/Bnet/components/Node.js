@@ -6,12 +6,6 @@ import ToggleStarBorder from 'material-ui/svg-icons/toggle/star-border.js'
 
 class Node extends React.Component {
   static propTypes = {
-    text : PropTypes.string.isRequired,
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-
-    fill : PropTypes.string,
-
     readyChangeText : PropTypes.func.isRequired,
   }
 
@@ -21,6 +15,7 @@ class Node extends React.Component {
 
   componentDidUpdate () {
     let props = this.props;
+    let node = props.node;
 
     // 内容が変更されていたらサイズ調整を行う
     if (!this.state.adjusted) {
@@ -30,7 +25,7 @@ class Node extends React.Component {
       let userStar = ReactDOM.findDOMNode(this.refs.userStar);
 
 
-      if (props.shape === 1) {
+      if (node.shape === 1) {
         let ellipse = ReactDOM.findDOMNode(this.refs.shape);
         let edgeH = 16 + bbox.width / 10;
         let edgeV = 16 + edgeH / 10;
@@ -38,13 +33,13 @@ class Node extends React.Component {
         ellipse.ry.baseVal.value = (bbox.height) / 2 + edgeV;
         ellipse.cx.baseVal.value = bbox.x + bbox.width / 2;
         ellipse.cy.baseVal.value = bbox.y + bbox.height / 2;
-      } else if (props.shape === 2) {
+      } else if (node.shape === 2) {
         let circle = ReactDOM.findDOMNode(this.refs.shape);
         let margin = 16;
         circle.r.baseVal.value = (Math.max(bbox.width, bbox.height)) / 2 + margin;
         circle.cx.baseVal.value = bbox.x + bbox.width / 2;
         circle.cy.baseVal.value = bbox.y + bbox.height / 2;
-      } else if (props.shape === 3) {
+      } else if (node.shape === 3) {
         let polygon = ReactDOM.findDOMNode(this.refs.shape);
         let margin = 48;
         let cx = bbox.x + bbox.width / 2;
@@ -95,6 +90,7 @@ class Node extends React.Component {
 
   render () {
     let props = this.props;
+    let node = props.node;
     let height = 30 + props.refSize * 7;
     let shapeStyle = nodeStyle.shape;
     if (props.target) {
@@ -105,42 +101,42 @@ class Node extends React.Component {
     }
 
     let shape = "";
-    if (props.shape === 1) {
+    if (node.shape === 1) {
       shape = (
-        <ellipse style={shapeStyle} ref="shape" fill={props.color} rx={5} ry={5} cx={5} cy={5} />
+        <ellipse style={shapeStyle} ref="shape" fill={node.color} rx={5} ry={5} cx={5} cy={5} />
       );
-    } else if (props.shape === 2) {
+    } else if (node.shape === 2) {
       shape = (
-        <circle style={shapeStyle} ref="shape" fill={props.color} r={5} cx={5} cy={5} />
+        <circle style={shapeStyle} ref="shape" fill={node.color} r={5} cx={5} cy={5} />
       );
-    } else if (props.shape === 3) {
+    } else if (node.shape === 3) {
       shape = (
-        <polygon style={shapeStyle} ref="shape" fill={props.color} points="0,0 0,0 0,0 0,0" />
+        <polygon style={shapeStyle} ref="shape" fill={node.color} points="0,0 0,0 0,0 0,0" />
       );
     } else {
       shape = (
-        <rect style={shapeStyle} ref="shape" fill={props.color} width={5} height={5} x={5} y={5} />
+        <rect style={shapeStyle} ref="shape" fill={node.color} width={5} height={5} x={5} y={5} />
       );
     }
 
     let text = null;
     let value = "";
-    if (props.text) {
+    if (node.text) {
       // 複数行は分割してtext要素を作成することで実現する
-      let lines = props.text.split(/\r\n|\r|\n/);
+      let lines = node.text.split(/\r\n|\r|\n/);
       value = [];
       lines.forEach((line, i) => {
         // リンクに対応
         if (line.startsWith("http://") || line.startsWith("https://")) {
           value.push(
-            <text style={nodeStyle.text} key={i} x={props.x} y={props.y + i * height} fontSize={height} >
+            <text style={nodeStyle.text} key={i} x={node.x} y={node.y + i * height} fontSize={height} >
               <a fill="blue" href={line} target="_blank">{line}</a>
             </text>
           );
         } else {
           // 上下の空行はサイズ認識してくれない
           value.push(
-            <text style={nodeStyle.text} key={i} x={props.x} y={props.y + i * height} fontSize={height} >
+            <text style={nodeStyle.text} key={i} x={node.x} y={node.y + i * height} fontSize={height} >
               {line || ".."}
             </text>
           );
@@ -149,7 +145,7 @@ class Node extends React.Component {
     } else {
       // 空の時の表示
       value = (
-        <text style={nodeStyle.text} x={props.x} y={props.y} fontSize={height} >
+        <text style={nodeStyle.text} x={node.x} y={node.y} fontSize={height} >
           {"-bnet-"}
         </text>
       );
@@ -162,8 +158,8 @@ class Node extends React.Component {
     );
 
     let userStar = [];
-    if (props.userStar) {
-      let nodeStarList = Object.keys(props.userStar);
+    if (node.userStar) {
+      let nodeStarList = Object.keys(node.userStar);
       let odd = (nodeStarList.length % 2 === 0);
       let size = height * 1.5;
       let rate = size / 28;
@@ -180,9 +176,9 @@ class Node extends React.Component {
             dx = (i % 2) === 0 ? -dx : dx;
           }
         }
-        let d = `M ${props.x + dx},${props.y - 2.2 * height} ${dSufix}`;
+        let d = `M ${node.x + dx},${node.y - 2.2 * height} ${dSufix}`;
         userStar.push((
-          <path key={i} className={props.target || props.family ? "" : "appeal"} style={nodeStyle.star} fill={props.color} d={d} />
+          <path key={i} className={props.target || props.family ? "" : "appeal"} style={nodeStyle.star} fill={node.color} d={d} />
         ));
       });
     }
@@ -192,7 +188,7 @@ class Node extends React.Component {
         onTouchEnd={props.cursorUpNode}
         onMouseDown={props.cursorDownNode}
         onTouchStart={props.cursorDownNode}
-        data-id={props.id}
+        data-id={node.id}
         style={nodeStyle.g}
       >
         {shape}

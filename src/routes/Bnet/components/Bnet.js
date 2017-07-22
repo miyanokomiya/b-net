@@ -7,7 +7,7 @@ import IconButton from 'material-ui/IconButton'
 import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
-import {f2v, v2f, v2fScaler} from '../modules/canvasUtils'
+import {f2v, v2f, v2fScaler, getSvgViewBox} from '../modules/canvasUtils'
 import {getAncestorMap, getDescentMap, getSizeMap} from '../modules/nodeUtils'
 import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
 import MenuItem from 'material-ui/MenuItem';
@@ -88,11 +88,35 @@ class Bnet extends React.Component {
     svgBox.style.height = window.innerHeight - 80 + "px";
   }
 
+  /**
+   * スナックバーを表示する
+   * @param {String} message 表示内容
+   */
   openSnackBar (message) {
     this.setState({
       openSnackBar: true,
       snackBarMessage : message,
     });
+  }
+
+  /**
+   * ノード削除
+   */
+  removeNode () {
+    const mess = "One more push to delete it.";
+    // 削除準備メッセージ表示中に再度操作されたら本当に削除する
+    if (this.state.openSnackBar && this.state.snackBarMessage === mess) {
+      this.props.removeNode();
+      this.setState({
+        openSnackBar: false,
+      });
+    } else {
+      // １回目はメッセージ表示
+      this.setState({
+        openSnackBar: true,
+        snackBarMessage : mess,
+      });
+    }
   }
 
   /**
@@ -183,21 +207,8 @@ class Bnet extends React.Component {
     let textDialog = "";
     let editMenu = "";
 
-    let iconSize = 18;
-    let buttonStyle = {
-      backgroundColor: blue500,
-      borderRadius: "3px",
-      width: iconSize*2,
-      height: iconSize*2,
-      padding: iconSize/2,
-      margin: 1,
-    };
-    let iconStyle = {
-      width: iconSize,
-      height: iconSize,
-    };
-
     if (props.state === 1) {
+      // ノードテキスト編集
       let node = props.nodeMap[props.target];
       if (node) {
         let completeChangeText = (e) => {
@@ -238,7 +249,7 @@ class Bnet extends React.Component {
     } else if (props.state === 4) {
       // 親ノード選択中
     } else if (props.target && !props.cursorState.drag) {
-
+      // 選択ノードあり and ドラッグ中でなければ編集メニュー表示
       let node = props.nodeMap[props.target];
       if (node) {
         // 子孫持ちかを調べる
@@ -264,7 +275,7 @@ class Bnet extends React.Component {
             completeChangeNodeStar={props.completeChangeNodeStar}
             selectFamily={props.selectFamily}
             cutParent={cutParent}
-            removeNode={props.removeNode}
+            removeNode={() => this.removeNode()}
           />
         )
       }
@@ -298,7 +309,7 @@ class Bnet extends React.Component {
       </Dialog>
     );
 
-    let vewBox = props.viewArea.left + " " + props.viewArea.top + " " + props.width * props.viewArea.scale + " " + props.height * props.viewArea.scale;
+    let viewBox = getSvgViewBox(props.viewArea, props.width, props.height);
       
     return (
       <div>
@@ -333,7 +344,7 @@ class Bnet extends React.Component {
 
         <div ref="svgBox" className="svg-box" >
           <svg ref="svg" style={svgStyle} version="1.1" width={props.width} height={props.height} xmlns="http://www.w3.org/2000/svg"
-              viewBox={vewBox}
+              viewBox={viewBox}
               onMouseDown={props.cursorDown}
               onMouseUp={props.cursorUp}
               onMouseLeave={props.cursorUp}
@@ -359,14 +370,8 @@ class Bnet extends React.Component {
                   let isTarget = node.id === props.target;
                   list.push(
                     <Node key={node.id} ref={isTarget ? "target" : ""}
-                      id={node.id}
-                      text={node.text}
-                      x={node.x} y={node.y}
+                      node={node}
                       target={isTarget}
-                      state={node.state}
-                      shape={node.shape}
-                      color={node.color}
-                      userStar={node.userStar}
                       readyChangeText={props.readyChangeText}
                       cursorUpNode={props.cursorUpNode}
                       cursorDownNode={props.cursorDownNode}

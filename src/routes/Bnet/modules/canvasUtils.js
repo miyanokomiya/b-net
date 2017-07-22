@@ -20,6 +20,18 @@ export function f2vScaler(viewArea, c) {
 }
 
 /**
+ * SVGタグ用のviewBox文字列を生成する
+ * @param {*} viewArea 表示領域情報
+ * @param {Number} width キャンバス幅
+ * @param {Number} height キャンバス高さ
+ * @return {String} SVGタグ用のviewBox文字列
+ */
+export function getSvgViewBox (viewArea, width, height) {
+    let viewBox = viewArea.left + " " + viewArea.top + " " + width * viewArea.scale + " " + height * viewArea.scale;
+    return viewBox;
+}
+
+/**
  * 表示エリアを最適化する
  * @param {*} nodeMap ノードマップ
  * @param {Number} viewWidth 表示領域幅
