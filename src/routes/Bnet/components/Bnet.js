@@ -386,7 +386,9 @@ class Bnet extends React.Component {
                     // ビュー移動中でなければラインアニメーション用クラス追加
                     // →スムーズになるきがする
                     if (!props.cursorState.drag || props.cursorState.targetDrag) {
-                      classList.push("animate-line");
+                      if (!props.cursorState.smoothScrollVector) {
+                        classList.push("animate-line");
+                      }
                     }
                     let line = (
                       <line key={key}

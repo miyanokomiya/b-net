@@ -475,11 +475,60 @@ export function cursorUp (value) {
     // カーソルダウンから間をおかずにアップしたかどうかをパラメータに追加
     let timeDiff = value.time - state.cursorState.cursorDownStartTime;
 
+    let smoothScrollVector = null;
+    if (smoothScrollBasePoint) {
+      // スムーズスクロール移動量として記録する
+      smoothScrollVector = {
+        x : smoothScrollBasePoint.x - state.cursorState.x,
+        y : smoothScrollBasePoint.y - state.cursorState.y,
+      }
+
+      let execLoop = () => {
+        setTimeout(() => {
+          // 最新のstateを取得する
+          let state = getState().bnet;
+          let vec = Object.assign({}, state.cursorState.smoothScrollVector);
+          if (vec) {
+            let d2 = Math.pow(vec.x, 2) + Math.pow(vec.y, 2);
+            if (d2 > 1) {
+              let val = {
+                x : state.cursorState.x + vec.x,
+                y : state.cursorState.y + vec.y,
+                smoothScrollVector : {
+                  x : vec.x *= 0.92,
+                  y : vec.y *= 0.92,
+                }
+              };
+              dispatch({
+                type: BNET_MOVE_VIEW,
+                payload: val,
+              });
+              execLoop();
+            } else {
+              // スムーズスクロール終了
+              let val = {
+                x : state.cursorState.x,
+                y : state.cursorState.y,
+                smoothScrollVector : null
+              };
+              dispatch({
+                type: BNET_MOVE_VIEW,
+                payload: val,
+              });
+            }
+          }
+        }, 30);
+      };
+      execLoop();
+    }
+    smoothScrollBasePoint = null;
+
     return dispatch({
       type    : BNET_CURSOR_UP,
       payload : {
         fastUp : timeDiff < FAST_TIME_BETWEEN_DOWN_AND_UP,
         onField : value.onField,
+        smoothScrollVector : smoothScrollVector
       }
     });
   };
@@ -499,6 +548,8 @@ let cursorMoveCommitExec = () => {
     cursorMoveCommitFunc = null;
   }
 };
+
+let smoothScrollBasePoint = null;
 
 export function cursorMove (value) {
   return (dispatch, getState) => {
@@ -596,6 +647,10 @@ export function cursorMove (value) {
         });
       } else {
         // ビューを移動
+        smoothScrollBasePoint = {
+          x : value.x,
+          y : value.y,
+        };
         if (!cursorMoveCommitTimer) {
           cursorMoveCommitFunc = () => {
             return dispatch({
@@ -840,6 +895,7 @@ const ACTION_HANDLERS = {
         {
           drag : !newTarget,
           targetDrag : !newTarget,
+          smoothScrollVector : null,
         }),
       });
   },
@@ -849,6 +905,7 @@ const ACTION_HANDLERS = {
       return Object.assign({}, state, {
         cursorState : Object.assign({}, state.cursorState, {
           pinchDistance : 0,
+          smoothScrollVector : null,
         }),
       });
     }
@@ -885,7 +942,8 @@ const ACTION_HANDLERS = {
           } : {
             x : 0,
             y : 0
-          }
+          },
+          smoothScrollVector : null,
         }),
         menuPoint : Object.assign({}, state.menuPoint,
         {
@@ -914,6 +972,7 @@ const ACTION_HANDLERS = {
         {
           drag : false,
           targetDrag : false,
+          smoothScrollVector : action.payload.smoothScrollVector,
         }),
         target : target,
         targetFamily : targetFamily,
@@ -952,6 +1011,7 @@ const ACTION_HANDLERS = {
         {
           x : action.payload.x,
           y : action.payload.y,
+          smoothScrollVector : action.payload.smoothScrollVector,
         }),
         viewArea : viewArea || state.viewArea,
         state : 0,
@@ -1056,7 +1116,8 @@ const initialState = {
     cursorDownStartTargetPoint : {
       x : 0,
       y : 0
-    }
+    },
+    smoothScrollVector : null,
   },
 }
 
