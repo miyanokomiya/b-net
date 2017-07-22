@@ -182,7 +182,7 @@ class Node extends React.Component {
         }
         let d = `M ${props.x + dx},${props.y - 2.2 * height} ${dSufix}`;
         userStar.push((
-          <path key={i} style={nodeStyle.star} fill={props.color} d={d} />
+          <path key={i} className={props.target || props.family ? "" : "appeal"} style={nodeStyle.star} fill={props.color} d={d} />
         ));
       });
     }
