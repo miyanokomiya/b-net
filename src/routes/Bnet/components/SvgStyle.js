@@ -15,17 +15,17 @@ export const svgStyle = {
 
 export const lineStyle = {
   crossLine : {
-    fill: "none",
+    fill: "#999",
     stroke: "#999",
     strokeWidth: 8,
   },
   nodeLine : {
-    fill: "none",
+    fill: "#09d",
     stroke: "#09d",
     strokeWidth: 4,
   },
   ancestorLine : {
-    fill: "none",
+    fill: "#ff7f50",
     stroke: "#ff7f50",
     strokeWidth: 8,
   }

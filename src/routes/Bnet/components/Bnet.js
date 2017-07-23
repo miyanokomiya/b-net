@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Node from './Node'
+import Line from './Line'
 import ReactDOM from 'react-dom'
 import TextField from 'material-ui/TextField'
 import IconButton from 'material-ui/IconButton'
@@ -382,24 +383,22 @@ class Bnet extends React.Component {
                   let parent = props.nodeMap[node.parentId];
                   if (parent) {
                     let key = `${node.id}-${parent.id}`;
-                    let classList = [];
-                    // ビュー移動中でなければラインアニメーション用クラス追加
+                    // ビュー移動中はラインアニメーション解除
                     // →スムーズになるきがする
+                    let animation = false;
                     if (!props.cursorState.drag || props.cursorState.targetDrag) {
                       if (!props.cursorState.smoothScrollVector) {
-                        classList.push("animate-line");
+                        animation = true;
                       }
                     }
                     let line = (
-                      <line key={key}
-                        x1={node.x}
-                        y1={node.y}
-                        x2={parent.x}
-                        y2={parent.y}
-                        style={m(lineStyle.nodeLine, ancestorMap[node.id] === parent.id ? lineStyle.ancestorLine : {})}
-                        className={classList.join(" ")}
-                      />
-                    )
+                      <Line
+                        key={key}
+                        node={node}
+                        parent={parent}
+                        ancestor={ancestorMap[node.id] === parent.id}
+                        animation={animation} />
+                    );
                     lineList.push(line);
                   }
                 }
