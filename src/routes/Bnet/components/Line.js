@@ -36,8 +36,11 @@ class Line extends React.Component {
     let style = m(lineStyle.nodeLine, props.ancestor ? lineStyle.ancestorLine : {});
     let rad = Math.atan2(node.y - parent.y, node.x - parent.x);
     let r = 16;
-    let points = `${center.x + r * Math.cos(rad)},${center.y + r * Math.sin(rad)} ${center.x + r * Math.cos(rad + Math.PI * 3 / 4)},${center.y + r * Math.sin(rad + Math.PI * 3 / 4)} ${center.x + r * Math.cos(rad + Math.PI * 5 / 4)},${center.y + r * Math.sin(rad + Math.PI * 5 / 4)}`;
-                    
+    let p0 = `${center.x + r * Math.cos(rad)},${center.y + r * Math.sin(rad)}`;
+    let p1 = `${center.x + r * Math.cos(rad + Math.PI * 3 / 4)},${center.y + r * Math.sin(rad + Math.PI * 3 / 4)}`;
+    let p2 = `${center.x + r / 3 * Math.cos(rad + Math.PI)},${center.y + r / 3 * Math.sin(rad + Math.PI)}`;
+    let p3 = `${center.x + r * Math.cos(rad + Math.PI * 5 / 4)},${center.y + r * Math.sin(rad + Math.PI * 5 / 4)}`;
+    let points = `${p0} ${p1} ${p2} ${p3}`;         
 
     return (
       <g style={style}>

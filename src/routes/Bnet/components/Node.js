@@ -10,21 +10,22 @@ class Node extends React.Component {
   }
 
   state = {
+    // 形状調整済みフラグ
     adjusted : false,
+    // 形状調整が必要かの差分判定用情報
+    adjustedDiff : null,
   }
 
   componentDidUpdate () {
     let props = this.props;
     let node = props.node;
 
-    // 内容が変更されていたらサイズ調整を行う
+    // 内容が変更されていたら背景図形のサイズ調整を行う
+    // textのサイズはdom作成しなくてはわからない
     if (!this.state.adjusted) {
       let text = ReactDOM.findDOMNode(this.refs.text);
       var bbox = text.getBBox();
-
-      let userStar = ReactDOM.findDOMNode(this.refs.userStar);
-
-
+      
       if (node.shape === 1) {
         let ellipse = ReactDOM.findDOMNode(this.refs.shape);
         let edgeH = 16 + bbox.width / 10;
@@ -48,7 +49,7 @@ class Node extends React.Component {
         let edgeV = bbox.height / 3 + edgeH / 5;
         
         // pointsはSVGPointListなので仕様に従う
-        // →一部ブラウザでは配列アクセスができなかった
+        // ->一部ブラウザでは配列アクセスができなかった
         let p0 = polygon.points.getItem(0);
         p0.x = cx - bbox.width/2 - edgeH;
         p0.y = cy;
@@ -81,11 +82,31 @@ class Node extends React.Component {
     this.componentDidUpdate();
   }
 
-  componentWillReceiveProps () {
-    // 調整が必要
-    this.setState({
-      adjusted : false
-    });
+  componentWillReceiveProps (nextState) {
+    let past = this.state.adjustedDiff;
+    let latest = nextState.node;
+    // 形状調整が必要な変更がされた場合は調整フラグを設定する
+    // ->処理速度上がるかと思ったがあまり効果ないかも
+    // ->スクロールや拡大でサイズがうねうねするのは防げる
+    // ->iphone5では文字のうねうね防げず
+    if (!past
+      || past.text !== latest.text
+      || past.x !== latest.x
+      || past.y !== latest.y
+      || past.shape !== latest.shape
+      || past.refSize !== nextState.refSize) {
+        // 調整が必要
+      this.setState({
+        adjusted : false,
+        adjustedDiff : {
+          text : latest.text,
+          x : latest.x,
+          y : latest.y,
+          shape : latest.shape,
+          refSize : nextState.refSize,
+        }
+      });
+    }
   }
 
   render () {

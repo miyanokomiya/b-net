@@ -310,6 +310,13 @@ class Bnet extends React.Component {
       </Dialog>
     );
 
+    let corssLine = (
+      <g>
+        <line x1={0} y1={-50} x2={0} y2={50} style={lineStyle.crossLine} />
+        <line x1={-50} y1={0} x2={50} y2={0} style={lineStyle.crossLine} />
+      </g>
+    );
+
     let viewBox = getSvgViewBox(props.viewArea, props.width, props.height);
       
     return (
@@ -405,8 +412,7 @@ class Bnet extends React.Component {
                 return lineList.concat(list);
               })()
             }
-            <line x1={0} y1={-50} x2={0} y2={50} style={lineStyle.crossLine} />
-            <line x1={-50} y1={0} x2={50} y2={0} style={lineStyle.crossLine} />
+            {corssLine}
           </svg>
           {editMenu}
         </div>

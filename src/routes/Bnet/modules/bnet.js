@@ -747,11 +747,6 @@ const ACTION_HANDLERS = {
         state : 0,
         target : null,
         targetFamily : {},
-        // 中心目印を隠しておく
-        viewArea : Object.assign({}, state.viewArea, {
-          left : 50,
-          top : 50,
-        })
       });
   },
   [BNET_NOT_AUTH] : (state, action) => {
@@ -1100,8 +1095,9 @@ const initialState = {
   },
   lastClickTime : 0,
   viewArea : {
-    left : 0,
-    top : 0,
+    // 中心目印を隠すためにずらしておく(あまり良い方法ではないので要改善)
+    left : 30,
+    top : 30,
     scale : 2,
   },
   cursorState : {
