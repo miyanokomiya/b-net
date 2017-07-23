@@ -744,6 +744,14 @@ const ACTION_HANDLERS = {
       {
         nodeMap : {},
         notAuth : false,
+        state : 0,
+        target : null,
+        targetFamily : {},
+        // 中心目印を隠しておく
+        viewArea : Object.assign({}, state.viewArea, {
+          left : 50,
+          top : 50,
+        })
       });
   },
   [BNET_NOT_AUTH] : (state, action) => {

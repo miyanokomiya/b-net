@@ -301,7 +301,7 @@ class Bnet extends React.Component {
         modal={true}
         open={true} >
         <TextField
-          hintText={"Hint: " + props.room.hint}
+          hintText={"Hint: " + (props.room ? props.room.hint : "")}
           floatingLabelText="Password"
           floatingLabelFixed={true}
           type="password"
@@ -316,7 +316,7 @@ class Bnet extends React.Component {
       <div>
         <MuiThemeProvider>
           <AppBar 
-            title={props.room.name}
+            title={props.room ? props.room.name : "loading.."}
             showMenuIconButton={true}
             iconElementLeft={
               <Link to='/room'>

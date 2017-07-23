@@ -343,7 +343,6 @@ function createRoom() {
     created : TIMESTAMP,
     name : "bnet",
     hint : "",
-    notAuth : true,
   };
 }
 

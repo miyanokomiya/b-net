@@ -52,9 +52,11 @@ export function getAdjustedViewArea(nodeMap, viewWidth, viewHeight) {
     let scaleW = maxW / ((viewWidth-50)/2);
     let scaleH = maxH / ((viewHeight-50)/2);
     let scale = Math.max(scaleW, scaleH);
+    scale = adjustScaleLimit(scale);
+    scale = Math.max(scale, 2.5);
 
     return {
-        scale : adjustScaleLimit(scale),
+        scale : scale,
         left : -viewWidth / 2 * scale,
         top : -viewHeight / 2 * scale,
     };
