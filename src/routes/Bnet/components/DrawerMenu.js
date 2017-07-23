@@ -32,8 +32,8 @@ class DrawerMenu extends React.Component {
             <Menu>
                 <MenuItem primaryText="JSON" leftIcon={<Upload />} onTouchTap={props.execImportJson} />
                 <Divider />
-                <MenuItem primaryText="SVG" leftIcon={<Download />} onTouchTap={props.execExportSvg} />
                 <MenuItem primaryText="JSON" leftIcon={<Download />} onTouchTap={props.execExportJson} />
+                <MenuItem primaryText="SVG" leftIcon={<Download />} onTouchTap={props.execExportSvg} />
             </Menu>
         </Drawer>
     );

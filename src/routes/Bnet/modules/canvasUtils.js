@@ -27,7 +27,7 @@ export function f2vScaler(viewArea, c) {
  * @return {String} SVGタグ用のviewBox文字列
  */
 export function getSvgViewBox (viewArea, width, height) {
-    let viewBox = viewArea.left + " " + viewArea.top + " " + width * viewArea.scale + " " + height * viewArea.scale;
+    let viewBox = `${viewArea.left} ${viewArea.top} ${width * viewArea.scale} ${height * viewArea.scale}`;
     return viewBox;
 }
 

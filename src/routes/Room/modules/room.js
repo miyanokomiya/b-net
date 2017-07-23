@@ -275,6 +275,7 @@ const ACTION_HANDLERS = {
   },
   [ROOM_ADD_ROOM_SUCCESS] : (state, action) => {
     let data = action.payload;
+    // 追加済みは無視
     if (state.roomMap[data.key]) {
       return state;
     }
