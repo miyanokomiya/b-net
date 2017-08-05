@@ -1,4 +1,6 @@
 
+export const SCALE_MAX = 10;
+export const SCALE_MIN = 0.8;
 
 export function v2f(viewArea, p) {
   return {
@@ -59,6 +61,8 @@ export function getAdjustedViewArea(nodeMap, viewWidth, viewHeight) {
         scale : scale,
         left : -viewWidth / 2 * scale,
         top : -viewHeight / 2 * scale,
+        width : viewWidth,
+        height : viewHeight,
     };
 }
 
@@ -68,15 +72,46 @@ export function getAdjustedViewArea(nodeMap, viewWidth, viewHeight) {
  * @return {Number} 調整後スケール
  */
 function adjustScaleLimit(scale) {
-    scale = Math.max(scale, 0.8);
-    scale = Math.min(scale, 10);
+    scale = Math.max(scale, SCALE_MIN);
+    scale = Math.min(scale, SCALE_MAX);
     return scale;
 }
 
 export function wheelCanvas(state, deltaX, p) {
     let delta = deltaX < 0 ? 1.8 : -1.8;
     let scale = state.viewArea.scale / Math.pow(1.03, delta);
+
+    return setScaleAndAdjust(state, scale, p);
+}
+
+export function pinchCanvas(state, p0, p1) {
+    let center = {
+        x : (p0.x + p1.x) / 2,
+        y : (p0.y + p1.y) / 2,
+    }
+
+    let scale = state.viewArea.scale
+    let d = Math.pow(Math.pow((p0.x - p1.x), 2) + Math.pow((p0.y - p1.y), 2), 1/2)
+    if (state.cursorState.pinchDistance > 0) {
+        let delta = state.cursorState.pinchDistance - d;
+
+        scale = state.viewArea.scale / Math.pow(1.01, -delta / 2);
+    }
+
+    let nextViewArea = setScaleAndAdjust(state, scale, center);
+    return [nextViewArea, d];
+}
+
+export function setScaleAndAdjust(state, scale, p) {
     scale = adjustScaleLimit(scale);
+
+    if (!p) {
+        // 座標指定がなければ表示領域の中心を基準とする
+        p = {
+            x : state.viewArea.width / 2,
+            y : state.viewArea.height / 2,
+        };
+    }
 
     // カーソル位置を基準にスケール変更
     let tmpViewArea = Object.assign({}, state.viewArea, {
@@ -92,38 +127,4 @@ export function wheelCanvas(state, deltaX, p) {
         left : state.viewArea.left + dx,
         top : state.viewArea.top + dy,
     });
-}
-
-export function pinchCanvas(state, p0, p1) {
-    let center = {
-        x : (p0.x + p1.x) / 2,
-        y : (p0.y + p1.y) / 2,
-    }
-
-    let scale = state.viewArea.scale
-    let d = Math.pow(Math.pow((p0.x - p1.x), 2) + Math.pow((p0.y - p1.y), 2), 1/2)
-    if (state.cursorState.pinchDistance > 0) {
-        let delta = state.cursorState.pinchDistance - d;
-
-        scale = state.viewArea.scale / Math.pow(1.01, -delta / 2);
-        scale = adjustScaleLimit(scale);
-    }
-
-    // カーソル位置を基準にスケール変更
-    let tmpViewArea = Object.assign({}, state.viewArea, {
-        scale : scale,
-    });
-    let f = v2f(state.viewArea, center);
-    let f2 = v2f(tmpViewArea, center);
-    let dx = f.x - f2.x;
-    let dy = f.y - f2.y;
-
-    return [
-        Object.assign({}, state.viewArea, {
-            scale : scale,
-            left : state.viewArea.left + dx,
-            top : state.viewArea.top + dy,
-        }),
-        d
-    ];
 }

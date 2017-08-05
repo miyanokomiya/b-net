@@ -143,6 +143,7 @@ const mapDispatchToProps = {
   },
   postPassword : (pass) => actions.postPassword(pass),
   selectFamily : () => actions.selectFamily(),
+  setScale : (val) => actions.setScale(val),
 }
 
 const mapStateToProps = (state) => state.bnet

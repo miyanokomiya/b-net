@@ -1,6 +1,6 @@
 import {firebaseDb, TIMESTAMP, firebaseAuth} from '../../../../firebase/'
 
-import {v2f, f2v, v2fScaler, f2vScaler, wheelCanvas, pinchCanvas, getAdjustedViewArea} from './canvasUtils'
+import {v2f, f2v, v2fScaler, f2vScaler, wheelCanvas, pinchCanvas, getAdjustedViewArea, setScaleAndAdjust} from './canvasUtils'
 import {createNode, assignNode, createNewNode, getBetterPoint, moveNode, moveNodeAtPoint, getDescentMap} from './nodeUtils'
 
 // ------------------------------------
@@ -25,6 +25,8 @@ export const BNET_MOVE_VIEW = 'BNET_MOVE_VIEW'
 export const BNET_CURSOR_UP = 'BNET_CURSOR_UP'
 export const BNET_CURSOR_WHEEL = 'BNET_CURSOR_WHEEL'
 export const BNET_CURSOR_PINCH = 'BNET_CURSOR_PINCH'
+
+export const BNET_SET_SCALE = 'BNET_SET_SCALE'
 
 export const BNET_NOT_AUTH = 'BNET_NOT_AUTH'
 export const BNET_CLEAR = 'BNET_CLEAR'
@@ -710,6 +712,13 @@ function selectFamily(value){
   }
 }
 
+function setScale(val){
+  return {
+    type: BNET_SET_SCALE,
+    payload: val
+  }
+}
+
 export const actions = {
   disConnect,
   loadTodos,
@@ -731,7 +740,8 @@ export const actions = {
   cursorWheel,
   cursorPinch,
   postPassword,
-  selectFamily
+  selectFamily,
+  setScale,
 }
 
 // ------------------------------------
@@ -1071,6 +1081,14 @@ const ACTION_HANDLERS = {
         state : 4,
       });
   },
+  [BNET_SET_SCALE] : (state, action) => {
+    let nextViewArea = setScaleAndAdjust(state, action.payload);
+    return Object.assign({},
+      state, 
+      {
+        viewArea : nextViewArea,
+      });
+  }
 }
 
 // ------------------------------------
@@ -1099,6 +1117,10 @@ const initialState = {
     left : 30,
     top : 30,
     scale : 2,
+    scaleMin : 0.8,
+    scaleMax : 10,
+    width : 100,
+    height : 100,
   },
   cursorState : {
     x : 0,

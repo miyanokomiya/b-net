@@ -8,7 +8,7 @@ import IconButton from 'material-ui/IconButton'
 import './Bnet.scss'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton';
-import {f2v, v2f, v2fScaler, getSvgViewBox} from '../modules/canvasUtils'
+import {f2v, v2f, v2fScaler, getSvgViewBox, SCALE_MAX, SCALE_MIN} from '../modules/canvasUtils'
 import {getAncestorMap, getDescentMap, getSizeMap} from '../modules/nodeUtils'
 import {blue500, red500, greenA200, fullWhite} from 'material-ui/styles/colors';
 import MenuItem from 'material-ui/MenuItem';
@@ -23,6 +23,7 @@ import MoreVert from 'material-ui/svg-icons/navigation/more-vert'
 import DrawerMenu from './DrawerMenu'
 import {m, svgStyle, lineStyle} from './SvgStyle'
 import {firebaseAuth} from '../../../../firebase/'
+import Slider from 'material-ui/Slider';
 
 class Bnet extends React.Component {
   static propTypes = {
@@ -86,7 +87,7 @@ class Bnet extends React.Component {
 
   adjustSvgBox () {
     let svgBox = this.refs.svgBox;
-    svgBox.style.height = window.innerHeight - 80 + "px";
+    svgBox.style.height = window.innerHeight - 70 + "px";
   }
 
   /**
@@ -414,6 +415,20 @@ class Bnet extends React.Component {
             }
             {corssLine}
           </svg>
+          <Slider
+            value={1 - ((props.viewArea.scale - SCALE_MIN) / (SCALE_MAX - SCALE_MIN))}
+            onChange={(e, val) => {
+              let scale = (SCALE_MAX - SCALE_MIN) * (1 - val) + SCALE_MIN;
+              props.setScale(scale);
+            }}
+            step={0.001}
+            style={{
+              width: '48%',
+              position: 'absolute',
+              left: '50%',
+              bottom: '15px',
+            }}
+            sliderStyle={{margin: 0,}}/>
           {editMenu}
         </div>
         {textDialog}
