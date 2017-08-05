@@ -37,6 +37,7 @@ class EditNodeMenu extends React.Component {
       height: iconSize*2,
       padding: iconSize/2,
       margin: 1,
+      pointerEvents : 'auto',
     };
     let iconStyle = {
       width: iconSize,
@@ -124,7 +125,11 @@ class EditNodeMenu extends React.Component {
     );
     
     return (
-      <form style={{position : 'absolute', display : 'inline-table'}}>
+      <form style={{
+          position : 'absolute',
+          display : 'inline-table',
+          pointerEvents : 'none'
+        }}>
         {starButton}
         {addNodeButton}
         {/*editTextButton*/}
