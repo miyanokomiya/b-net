@@ -555,8 +555,9 @@ let smoothScrollBasePoint = null;
 
 export function cursorMove (value) {
   return (dispatch, getState) => {
+    let uid = firebaseAuth.currentUser.uid;
     let state = getState().bnet;
-    if (state.state === 0 && state.cursorState.drag && value.buttons > 0) {
+    if (state.state === 0 && state.cursorState.drag) {
       // 操作対象ノードを探す
       let node = state.nodeMap[state.target];
       if (node && state.cursorState.targetDrag) {
@@ -572,6 +573,7 @@ export function cursorMove (value) {
         let nextNode = Object.assign({}, node, {
           x : p.x,
           y : p.y,
+          lastMoved : uid,
         });
         let dx = nextNode.x - node.x;
         let dy = nextNode.y - node.y;
@@ -584,6 +586,7 @@ export function cursorMove (value) {
             nextFamily[k] = Object.assign({}, n, {
               x : n.x + dx,
               y : n.y + dy,
+              lastMoved : uid,
             });
           }
         }
@@ -615,6 +618,7 @@ export function cursorMove (value) {
               ref.update({
                 x : node.x,
                 y : node.y,
+                lastMoved : node.lastMoved,
               })
               .catch(error => {
                 console.log(error);
@@ -826,10 +830,21 @@ const ACTION_HANDLERS = {
       });
   },
   [BNET_CHANGE_NODE] : (state, action) => {
+    let uid = firebaseAuth.currentUser.uid;
     let nodeMap = action.payload;
     let tmp = {};
     for (let k in nodeMap) {
       tmp[k] = assignNode(nodeMap[k]);
+      
+      // 自分が移動させた時のデータ更新だった場合は反映しない
+      // ->移動時に即反映済させている
+      if (uid === tmp[k].lastMoved) {
+        let org = state.nodeMap[k];
+        tmp[k] = Object.assign({}, tmp[k], {
+          x : org.x,
+          y : org.y,
+        });
+      }
     }
     let nextNodeMap = Object.assign({}, state.nodeMap, tmp);
     return Object.assign({}, 

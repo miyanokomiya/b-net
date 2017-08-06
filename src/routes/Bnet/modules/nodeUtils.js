@@ -21,6 +21,7 @@ export function createNode() {
   return {
     x : 0,
     y : 0,
+    lastMoved : null,
     parentId : null,
     text : "",
     id : "",
