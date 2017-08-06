@@ -494,11 +494,13 @@ export function cursorUp (value) {
             let d2 = Math.pow(vec.x, 2) + Math.pow(vec.y, 2);
             if (d2 > 1) {
               let val = {
-                x : state.cursorState.x + vec.x,
-                y : state.cursorState.y + vec.y,
+                // ここで丸めないとスクロール中にテキストがぶれる
+                // なぜここで丸めるとうまくいくかは不明
+                x : Math.round(state.cursorState.x + vec.x),
+                y : Math.round(state.cursorState.y + vec.y),
                 smoothScrollVector : {
-                  x : vec.x *= 0.92,
-                  y : vec.y *= 0.92,
+                  x : vec.x * 0.92,
+                  y : vec.y * 0.92,
                 }
               };
               dispatch({
