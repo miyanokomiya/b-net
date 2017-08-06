@@ -150,14 +150,14 @@ class Node extends React.Component {
         // リンクに対応
         if (line.startsWith("http://") || line.startsWith("https://")) {
           value.push(
-            <text style={nodeStyle.text} key={i} x={node.x} y={node.y + i * height} fontSize={height} >
+            <text style={nodeStyle.text} key={i} x={node.x} y={node.y + i * (height + 1)} fontSize={height} >
               <a fill="blue" href={line} target="_blank">{line}</a>
             </text>
           );
         } else {
           // 上下の空行はサイズ認識してくれない
           value.push(
-            <text style={nodeStyle.text} key={i} x={node.x} y={node.y + i * height} fontSize={height} >
+            <text style={nodeStyle.text} key={i} x={node.x} y={node.y + i * (height + 1)} fontSize={height} >
               {line || ".."}
             </text>
           );
